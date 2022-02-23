@@ -1,7 +1,7 @@
 #ifndef COMMONINFORCLONE_H
 #define COMMONINFORCLONE_H
 #include <QObject>
-#include "sqliteworker.h"
+//#include "sqliteworker.h"
 
 #define LOG_SPLIT_STRING "|||"
 
@@ -27,12 +27,12 @@ enum class STATUS_UNCHECKPOINT: int {
 };
 
 
-class CommonInforClone : public QObject
+class CloneInfo : public QObject
 {
     Q_OBJECT
 public:
-    ~CommonInforClone(){}
-    explicit CommonInforClone(QString cloneId, QString UID = "", QString passWord = "", QString haiFA = "", QString token = "", QString cookies = "",
+    ~CloneInfo(){}
+    explicit CloneInfo(QString cloneId, QString UID = "", QString passWord = "", QString haiFA = "", QString token = "", QString cookies = "",
                      QString status = "", QString note = "", SET_APP_NAME appName = SET_APP_NAME::TYPE_FACEBOOK, bool isCheckPoint = false,
                      QStringList listLog = QStringList(), QString userAgent = "", LANGUAGE language = LANGUAGE::NONE, QString email = "",
                      QString passMail = "", QString birthDay = "", QString gender = "", QString nameAcc = "", QString infoJsonClone = "", STATUS_UNCHECKPOINT sttUncheckPoint = STATUS_UNCHECKPOINT::NOMAL);
@@ -107,7 +107,7 @@ public:
     void checkLogToClear();
 
 signals:
-    void updateClone(QString cloneId, DATABASE_CATEGORY category);
+//    void updateClone(QString cloneId, DATABASE_CATEGORY category);
     void checkpointChanged();
 
     void logChanged(QStringList log);
@@ -138,7 +138,7 @@ private:
     QString m_nameAcc;
     QString m_infoJsonClone;
 
-    QMutex mutex;
+//    QMutex mutex;
     STATUS_UNCHECKPOINT m_sttCheckPoint;
 };
 

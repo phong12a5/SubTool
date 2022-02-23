@@ -3,9 +3,13 @@
 
 #include <QObject>
 #include <QThread>
-#include "baseworker.h"
+//#include "baseworker.h"
 #include "log.h"
-#include "CommonInforClone.h"
+#include "model/cloneinfo.h"
+#include "fdriver/include/fdriver.h"
+#include "fdriver/include/browsers/chrome.h"
+
+using namespace fdriver;
 
 class ServiceData;
 
@@ -18,14 +22,14 @@ public:
       TYPE_FIREFOX_SERVICE
     };
 public:
-    explicit BaseService(SERVICE_TYPE type, BaseWorker* woker, QObject *parent = nullptr);
+    explicit BaseService(SERVICE_TYPE type, QObject *parent = nullptr);
     virtual ~BaseService();
 
     int type();
     void startService(QString UID);
-    void stopThread();
-    void setInfoClone(CommonInforClone* clone);
-    CommonInforClone* getInfoClone() const;
+    void dispose();
+//    void setInfoClone(CloneInfo* clone);
+//    CloneInfo* getInfoClone() const;
 
     // use this function is dangerous, only use when close app
     virtual void forceStop();
@@ -34,7 +38,8 @@ signals:
     void serviceFinished(int serviceId);
 
 public slots:
-    void onWorkerFinished();
+    virtual void onSeparateThreadStarted();
+//    void onWorkerFinished();
 
     //Interface
 protected:
@@ -42,15 +47,19 @@ protected:
 
 protected:
     QThread* m_workerThread = nullptr;
-    BaseWorker* m_worker = nullptr;
+//    BaseWorker* m_worker = nullptr;
     ServiceData* m_service_data = nullptr;
-    CommonInforClone* m_infoClone = nullptr;
+//    CloneInfo* m_infoClone = nullptr;
 
 private:
     int m_type;
 
+protected:
+    FDriver *driver = nullptr;
+
 signals:
-    void startFDriver(QString UID);
+    void finished();
+    void started();
 };
 
 #endif // BASESERVICE_H

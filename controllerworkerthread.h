@@ -8,7 +8,7 @@
 #include "DefineString.h"
 #include "AppEnum.h"
 #include "AppDefine.h"
-#include "CommonInforClone.h"
+#include "CloneInfo.h"
 
 #define CONTROLLERWORKER ControllerWorkerThread::getInstance()
 

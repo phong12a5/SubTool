@@ -7,11 +7,11 @@
 #include <QNetworkReply>
 #include <QStringList>
 
-#include "definition.h"
+//#include "definition.h"
 #include "AppEnum.h"
 #include "AppDefine.h"
-#include "networkaccesscontrollersupporter.h"
-#include "downloadmanager.h"
+//#include "networkaccesscontrollersupporter.h"
+//#include "downloadmanager.h"
 
 #define CONTROLLERMAIN ControllerMainThread::getInstance()
 
@@ -133,8 +133,8 @@ private:
     QTimer m_updateTimer;
 
     // supporter
-    NetworkAccessControllerSupporter m_networkAccess;
-    DownLoadManager m_downloadManager;
+//    NetworkAccessControllerSupporter m_networkAccess;
+//    DownLoadManager m_downloadManager;
 
     // other
     bool m_appRunning = false;

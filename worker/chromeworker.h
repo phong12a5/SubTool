@@ -167,7 +167,7 @@ private:
     bool m_isCheckPoint = false;
     QMap<QString, int> m_mapAction;
     QMap<QString, int> m_mapActionWithEnum;
-    CommonInforClone *m_cloneRun;
+    CloneInfo *m_cloneRun;
 //    NetworkAccessSupporter *m_networkAccessSup = nullptr;
     QString m_idCaptCha = "";
     QString m_phoneNumber = "";

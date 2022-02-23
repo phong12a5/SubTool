@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "log.h"
+#include <QProcess>
 
 class AppMain : public QObject
 {
@@ -13,14 +14,15 @@ private:
 public:
     static AppMain* instance();
 
-    Q_INVOKABLE bool startTest();
-    Q_INVOKABLE bool stopTest();
+    Q_INVOKABLE bool start();
+    Q_INVOKABLE bool stop();
 
 public slots:
-    void onClickedStart(bool);
+    void onServiceUpdated();
 
 private:
     static AppMain* m_instance;
+    QProcess* m_chromeDriverProcess = nullptr;
 };
 
 #endif // APPMAIN_H

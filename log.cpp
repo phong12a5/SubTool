@@ -1,5 +1,5 @@
 #include "log.h"
-#include "sqliteworker.h"
+//#include "sqliteworker.h"
 #include <QNetworkReply>
 
 LogHelper* LogHelper::m_InstancePtr = nullptr;
@@ -55,12 +55,12 @@ void LogHelper::initialize()
 
 void LogHelper::writeLogHandle(QString msg)
 {
-    m_dataForm["token"] = SQLiteWorker::getInstance()->getToken();
-    m_dataForm["log"] = msg;
-    QNetworkReply* reply = m_networkAccessManager->post(m_requestForm, QJsonDocument(m_dataForm).toJson(QJsonDocument::Compact));
-    connect(reply, &QNetworkReply::finished, this, [=]{
-        reply->deleteLater();
-    });
+//    m_dataForm["token"] = SQLiteWorker::getInstance()->getToken();
+//    m_dataForm["log"] = msg;
+//    QNetworkReply* reply = m_networkAccessManager->post(m_requestForm, QJsonDocument(m_dataForm).toJson(QJsonDocument::Compact));
+//    connect(reply, &QNetworkReply::finished, this, [=]{
+//        reply->deleteLater();
+//    });
 }
 
 void LogHelper::qtMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)

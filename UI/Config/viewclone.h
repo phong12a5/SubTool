@@ -9,7 +9,7 @@
 #include <QModelIndex>
 #include <QtSql/QSql>
 #include <QFileInfo>
-#include "CommonInforClone.h"
+#include "CloneInfo.h"
 #include "sqliteworker.h"
 
 namespace Ui {

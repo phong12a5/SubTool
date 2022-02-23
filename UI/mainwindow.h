@@ -9,7 +9,7 @@
 #include "Config/viewclone.h"
 #include "Config/checkpoint.h"
 
-#include "CommonInforClone.h"
+#include "CloneInfo.h"
 #include "tokendialog.h"
 #include "viewlog.h"
 #include "processdownload.h"

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "baseservice.h"
-#include "chromeworker.h"
+//#include "worker/chromeworker.h"
 
 class ServiceData;
 
@@ -14,10 +14,16 @@ public:
     explicit ChromeService(QObject *parent = nullptr);
     ~ChromeService();
 
-    void connectSignalSlots();
+    void connectSignalSlots() override;
     ServiceData* model();
 
     void forceStop() override;
+
+public slots:
+    void onSeparateThreadStarted() override;
+
+private:
+    QThread m_;
 };
 
 #endif // CHROMESERVICE_H

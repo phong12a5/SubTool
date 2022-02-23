@@ -46,41 +46,11 @@ void ServiceManager::deleteService(int serviceId)
     LOGD << serviceId;
     BaseService* service = reinterpret_cast<BaseService*>(serviceId);
     if(m_listService.removeOne(service)) {
-        delete service;
+        service->dispose();
     }
-
-    if(m_listService.isEmpty()) {
-        CONTROLLERMAIN->setServiceRunning(false);
-    }
-}
-
-void ServiceManager::forceDeleteAllService()
-{
-    LOGD;
-    if(!m_listService.isEmpty())
-    {
-        qDeleteAll(m_listService);
-        m_listService.clear();
-    }
-    CONTROLLERMAIN->setServiceRunning(false);
 }
 
 QList<BaseService *> ServiceManager::listService()
 {
     return m_listService;
-}
-
-void ServiceManager::onServiceFinished(int serviceId)
-{
-    LOGD << "onServiceFinished serviceId: " << serviceId;
-    LOGD << "onServiceFinished---  truoc khi remove: " << m_listService.size();
-    BaseService* service = reinterpret_cast<BaseService*>(serviceId);
-    QString cloneId = service->getInfoClone()->getCloneId();
-    m_listService.removeOne(service);
-    delete service;
-    LOGD << "onServiceFinished---  sau khi remove: " << m_listService.size();
-    if(m_listService.isEmpty()) {
-        CONTROLLERMAIN->setServiceRunning(false);
-    }
-    emit runCloneFinished(cloneId);
 }

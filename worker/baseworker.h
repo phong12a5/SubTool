@@ -5,7 +5,7 @@
 #include "log.h"
 #include "fdriver/include/fdriver.h"
 #include "fdriver/include/browsers/chrome.h"
-#include "CommonInforClone.h"
+#include "CloneInfo.h"
 
 using namespace fdriver;
 
@@ -18,7 +18,7 @@ public:
     explicit BaseWorker(QObject *parent = nullptr);
     virtual ~BaseWorker();
     void setSerivceData(ServiceData*);
-    void setInfoClone(CommonInforClone* clone);
+    void setInfoClone(CloneInfo* clone);
 
 signals:
     void workerFinished();
@@ -29,7 +29,7 @@ public slots:
 protected:
     FDriver *driver = nullptr;
     ServiceData* m_service_data = nullptr;
-    CommonInforClone* m_infoClone = nullptr;
+    CloneInfo* m_infoClone = nullptr;
 };
 
 #endif // BASEWORKER_H

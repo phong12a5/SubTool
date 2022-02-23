@@ -10,7 +10,7 @@
 #define TABLE_NAME_ACCOUNTS "accounts"
 #define TABLE_NAME_LOCAL_DATA "otherData"
 
-class CommonInforClone;
+class CloneInfo;
 
 enum class DATABASE_UPDATE_CATEGORY: int {
     MIN_DATABASE_CATEGORY = 0,
@@ -122,7 +122,7 @@ public:
 
     void checkLogToClear();
 
-    QList<CommonInforClone *> getListClone();
+    QList<CloneInfo *> getListClone();
 
     bool checkCloneExist(QString cloneId);
 
@@ -175,9 +175,9 @@ signals:
 
     bool setNumberThread(int num);
 
-    bool setListClone(QList<CommonInforClone *> listClone, bool isDeleteOldList = false);
-    bool addClone(CommonInforClone* clone, bool isAddToList = true, bool isRefreshListClone = false);
-    bool addListClone(QList<CommonInforClone *> listClone, bool isAddToList = true, bool isRefreshListClone = false);
+    bool setListClone(QList<CloneInfo *> listClone, bool isDeleteOldList = false);
+    bool addClone(CloneInfo* clone, bool isAddToList = true, bool isRefreshListClone = false);
+    bool addListClone(QList<CloneInfo *> listClone, bool isAddToList = true, bool isRefreshListClone = false);
     bool deleteCloneById(QString cloneId);
 
     bool updateCloneById(QString cloneId, DATABASE_CATEGORY category);
@@ -240,9 +240,9 @@ private slots:
     bool setLocalData(LOCAL_CATEGORY category, QVariant data);
     QVariant getLocalData(LOCAL_CATEGORY category);
 
-    bool setListCloneHandle(QList<CommonInforClone *> listClone, bool isDeleteOldList = false);
-    bool addCloneHandle(CommonInforClone* clone, bool isAddToList = true, bool isRefreshListClone = false);
-    bool addListCloneHandle(QList<CommonInforClone *> listClone, bool isAddToList = true, bool isRefreshListClone = false);
+    bool setListCloneHandle(QList<CloneInfo *> listClone, bool isDeleteOldList = false);
+    bool addCloneHandle(CloneInfo* clone, bool isAddToList = true, bool isRefreshListClone = false);
+    bool addListCloneHandle(QList<CloneInfo *> listClone, bool isAddToList = true, bool isRefreshListClone = false);
     bool deleteCloneByIdHandle(QString cloneId);
 
     bool updateCloneByIdHandle(QString cloneId, DATABASE_CATEGORY category);
@@ -300,7 +300,7 @@ private:
     QString m_tableAccounts;
     QString m_tableData;
     QSqlDatabase m_mydb;
-    QList<CommonInforClone *> m_listClone;
+    QList<CloneInfo *> m_listClone;
     QMap<LOCAL_CATEGORY, QVariant> m_localData;
     QByteArray m_encrypt_key;
     QByteArray m_encrypt_iv;

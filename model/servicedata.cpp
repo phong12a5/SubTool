@@ -10,10 +10,14 @@
 #include <QFileInfo>
 #include <QList>
 #include "log.h"
+#include <QSettings>
+#include <AppDefine.h>
 
 ServiceData::ServiceData(QObject *parent) : QObject(parent)
 {
-
+    QSettings settings;
+//    QString cloneInfoKey = QString(CLONE_INFO_FILED) +
+//    m_cloneInfo = nullptr;
 }
 
 QString ServiceData::pathUploadProfile(QString url)

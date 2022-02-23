@@ -1,6 +1,6 @@
 #include "sqliteworker.h"
 #include "log.h"
-#include "CommonInforClone.h"
+#include "CloneInfo.h"
 #include <QMutex>
 #include "controllermainthread.h"
 #include "utils.h"

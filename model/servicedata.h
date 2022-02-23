@@ -2,11 +2,12 @@
 #define SERVICEDATA_H
 
 #include <QObject>
-#include <CommonInforClone.h>
+#include "cloneinfo.h"
 #include "log.h"
 #include "fdriver/include/util/futil.h"
 #include <windows.h>
 #include "AppEnum.h"
+#include "cloneinfo.h"
 
 class ServiceData : public QObject
 {
@@ -24,12 +25,10 @@ public:
 
     explicit ServiceData(QObject* parent = nullptr);
 
-    void set2Fa(QString haiFa) {
-        m_2Fa = ::fdriver::FUtil::tOTP(haiFa.toStdString().c_str());
-    }
-    std::string get2fa() {
-        LOGD << "get2fa: " << m_2Fa.c_str();
-        return m_2Fa;
+    CloneInfo* getCloneInfo() { return m_cloneInfo; }
+
+    void  setCloneInfo(CloneInfo* cloneInfo) {
+        m_cloneInfo = cloneInfo;
     }
 
     void setLinkProfile(QString url) {
@@ -98,6 +97,7 @@ public:
 
     QString pathUploadProfile(QString url);
 private:
+    CloneInfo* m_cloneInfo;
     std::string m_2Fa;
     int m_numberThread;
     int m_xPosstion;
