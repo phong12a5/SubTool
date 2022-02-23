@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow_bak</class>
+ <widget class="QMainWindow" name="MainWindow_bak">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>769</width>
+    <height>551</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>f-care</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Logo.ico</normaloff>Logo.ico</iconset>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QTableView" name="tableView"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>769</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuClone">
+    <property name="title">
+     <string>Clone</string>
+    </property>
+    <widget class="QMenu" name="menuImport_Clone">
+     <property name="title">
+      <string>Import Clone</string>
+     </property>
+     <addaction name="actionUID_Pass"/>
+     <addaction name="actionUID_Pass_2FA"/>
+    </widget>
+    <addaction name="menuImport_Clone"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuConfig">
+    <property name="title">
+     <string>Config</string>
+    </property>
+    <addaction name="actionC_u_h_nh_Proxy_VPN"/>
+    <addaction name="actionC_u_h_nh_s_lu_ng"/>
+    <addaction name="actionC_u_h_nh_Facebook"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuConfig"/>
+   <addaction name="menuClone"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionStart"/>
+   <addaction name="separator"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
+  </widget>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionStart">
+   <property name="icon">
+    <iconset resource="qml.qrc">
+     <normaloff>:/images/icons8_play_1.png</normaloff>
+     <normalon>:/new/prefix1/images/change_25px.png</normalon>:/images/icons8_play_1.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start</string>
+   </property>
+   <property name="iconText">
+    <string> Start</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionT_ng_s_clone">
+   <property name="text">
+    <string>Tổng số clone</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionC_u_h_nh_Proxy_VPN">
+   <property name="text">
+    <string>Cấu hình Proxy/VPN</string>
+   </property>
+  </action>
+  <action name="actionC_u_h_nh_s_lu_ng">
+   <property name="text">
+    <string>Cấu hình số luồng</string>
+   </property>
+  </action>
+  <action name="actionC_u_h_nh_Facebook">
+   <property name="text">
+    <string>Cấu hình Facebook</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="qml.qrc">
+     <normaloff>:/images/icons8_opened_folder_37px.png</normaloff>:/images/icons8_opened_folder_37px.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="qml.qrc">
+     <normaloff>:/images/checked_checkbox_25px.png</normaloff>:/images/checked_checkbox_25px.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="qml.qrc">
+     <normaloff>:/images/icons8_shutdown_30px.png</normaloff>:/images/icons8_shutdown_30px.png</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionUID_Pass">
+   <property name="text">
+    <string>UID|Pass</string>
+   </property>
+  </action>
+  <action name="actionUID_Pass_2FA">
+   <property name="text">
+    <string>UID|Pass|2FA</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="qml.qrc"/>
+ </resources>
+ <connections/>
+</ui>
