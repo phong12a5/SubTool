@@ -54,10 +54,15 @@ void ChromeService::onStarted()
     chromeOptions.Set<std::vector<std::string>>("args",args);
     chrome.SetChromeOptions(chromeOptions);
 
-        driver = new FDriver(chrome);
+    driver = new FDriver(chrome);
     //    driver->GetCurrentWindow().SetPosition(Point(m_service_data->getX(), m_service_data->getY()));
     //    driver->GetCurrentWindow().SetSize(size);
-        //        driver->Navigate("http://m.facebook.com");
+    driver->Navigate("http://m.facebook.com");
+    if(serviceData()->cloneInfo() != nullptr &&
+            !serviceData()->cloneInfo()->cookies().isEmpty()) {
+        setCookies(serviceData()->cloneInfo()->cookies());
+    }
+    driver->Navigate("http://m.facebook.com");
 
     startMainProcess();
 }

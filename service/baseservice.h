@@ -47,6 +47,7 @@ public slots:
     //Interface
 protected:
     virtual void connectSignalSlots() = 0;
+    void setCookies(QString cookies);
 
 protected:
     QThread* m_workerThread = nullptr;

@@ -11,6 +11,7 @@
 #define CLONE_INFO_FIELD_APPNAME "appname"
 #define CLONE_INFO_FIELD_NAME "name"
 #define CLONE_INFO_FIELD_EMAIL "email"
+#define CLONE_INFO_FIELD_COOKIES "cookie"
 #define CLONE_INFO_FIELD_EMAIL_PASSWORD "emailPassword"
 #define CLONE_INFO_FIELD_RECOVERY_EMAIL "recovery_email"
 #define CLONE_INFO_FIELD_SECRETKEY "secretkey"
@@ -68,7 +69,7 @@ public:
 //    QString token();
 
 //    void setCookies(QString cookies);
-//    QString cookies();
+    QString cookies();
 
     void setAliveStatus(QString status);
     QString aliveStatus();

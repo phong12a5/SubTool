@@ -48,6 +48,11 @@ QString CloneInfo::secretkey()
     return m_cloneInfo.value(CLONE_INFO_FIELD_SECRETKEY).toString();
 }
 
+QString CloneInfo::cookies()
+{
+    return m_cloneInfo.value(CLONE_INFO_FIELD_COOKIES).toString();
+}
+
 void CloneInfo::setAliveStatus(QString status)
 {
     if(this->aliveStatus() != status) {
