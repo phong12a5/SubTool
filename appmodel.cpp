@@ -14,7 +14,8 @@ AppModel *AppModel::instance()
 }
 
 AppModel::AppModel() :
-    m_appStarted(false)
+    m_appStarted(false),
+    m_deviceStatus("checking")
 {
     QSettings settings;
     if(settings.contains(MAX_THREAD_FIELD))
@@ -59,5 +60,28 @@ void AppModel::setToken(QString newToken)
         QSettings settings;
         settings.setValue(TOKEN_FIELD, newToken);
         emit tokenChanged();
+    }
+}
+
+QString AppModel::deviceName()
+{
+    return QSysInfo::machineHostName();
+}
+
+QString AppModel::appVersion()
+{
+    return "0.0.1";
+}
+
+QString AppModel::deviceStatus()
+{
+    return m_deviceStatus;
+}
+
+void AppModel::setDeviceStatus(QString status)
+{
+    if(status != m_deviceStatus) {
+        m_deviceStatus = status;
+        emit deviceStatusChanged();
     }
 }

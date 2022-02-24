@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty("AppMain", AppMain::instance());
     engine.rootContext()->setContextProperty("AppModel", AppModel::instance());
-//       engine.rootContext()->setContextProperty("applicationDirPath", QDir::currentPath());
 
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

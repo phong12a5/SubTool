@@ -28,6 +28,7 @@ SOURCES += \
         service/baseservice.cpp \
         service/chromeservice.cpp \
         service/servicemanager.cpp \
+        service/apiservices.cpp \
 #        worker/baseworker.cpp \
 #        worker/chromeworker.cpp \
         utils.cpp
@@ -43,6 +44,7 @@ HEADERS += \
     service/baseservice.h \
     service/chromeservice.h \
     service/servicemanager.h \
+    service/apiservices.h \
     fdriver/include/fdriver_global.h \
     utils.h \
 #    worker/baseworker.h \

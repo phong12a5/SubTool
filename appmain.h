@@ -4,6 +4,7 @@
 #include <QObject>
 #include "log.h"
 #include <QProcess>
+#include <QTimer>
 
 class AppMain : public QObject
 {
@@ -18,11 +19,17 @@ public:
     Q_INVOKABLE bool stop();
 
 public slots:
+    void onCheckPrecondition();
     void onServiceUpdated();
+    void onConfigChanged();
+
+private:
+    void initAutofarmerAPIs();
 
 private:
     static AppMain* m_instance;
     QProcess* m_chromeDriverProcess = nullptr;
+    QTimer* m_preconditionChecker;
 };
 
 #endif // APPMAIN_H
