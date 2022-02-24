@@ -3,6 +3,8 @@
 #include "fdriver.h"
 #include <WebAPI.hpp>
 #include <appmodel.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 using namespace fdriver;
 
@@ -83,10 +85,17 @@ void APIServices::onChecking()
     } else {
         m_isFdriverReady = true;
 
-        if(!m_isAFAPIReady && !WebAPI::getInstance()->initWebAPIs(nullptr, AppModel::instance()->token().toUtf8().data(),\
-                                                                  AppModel::instance()->deviceName().toUtf8().data(),\
-                                                                  AppModel::instance()->deviceName().toUtf8().data(),\
-                                                                  AppModel::instance()->appVersion().toUtf8().data())) {
+        QJsonObject deviceInfo;
+        deviceInfo["Model"] = "Windows-PC";
+        deviceInfo["DeviceName"] = AppModel::instance()->deviceName();
+        deviceInfo["app_type"] = "page_sub";
+        deviceInfo["AndroidId"] = AppModel::instance()->deviceName();
+        deviceInfo["app_sersion_name"] = AppModel::instance()->appVersion();
+        deviceInfo["MacAddress"] = "02:00:00:00:00:00";
+
+        const char * deviceInfoStr = QString(QJsonDocument(deviceInfo).toJson(QJsonDocument::Compact)).toUtf8().data();
+
+        if(!m_isAFAPIReady && !WebAPI::getInstance()->initWebAPIs(nullptr, AppModel::instance()->token().toUtf8().data(), deviceInfoStr)) {
             m_isAFAPIReady = false;
         } else {
             m_isAFAPIReady = true;

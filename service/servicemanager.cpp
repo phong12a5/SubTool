@@ -14,11 +14,11 @@ ServiceManager *ServiceManager::instance()
     return sInstance;
 }
 
-QList<int> ServiceManager::getServiceIds()
+QList<BaseService*> ServiceManager::getServiceIds()
 {
-    QList<int> serivceIds;
+    QList<BaseService*> serivceIds;
     foreach(BaseService* service, m_listService) {
-        serivceIds.append(reinterpret_cast<int>(service));
+        serivceIds.append(service);
     }
     return serivceIds;
 }
@@ -30,7 +30,7 @@ ServiceManager::ServiceManager(QObject *parent) : QObject(parent)
 
 ServiceManager::~ServiceManager()
 {
-    foreach(int serviceId, getServiceIds()) {
+    foreach(BaseService* serviceId, getServiceIds()) {
         deleteService(serviceId);
     }
     LOGD;
@@ -41,10 +41,8 @@ int ServiceManager::countService()
     return m_listService.count();
 }
 
-void ServiceManager::deleteService(int serviceId)
+void ServiceManager::deleteService(BaseService * service)
 {
-    LOGD << serviceId;
-    BaseService* service = reinterpret_cast<BaseService*>(serviceId);
     if(m_listService.removeOne(service)) {
         service->dispose();
     }

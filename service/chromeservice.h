@@ -17,10 +17,9 @@ public:
     void connectSignalSlots() override;
     ServiceData* model();
 
-    void forceStop() override;
-
 public slots:
-    void onSeparateThreadStarted() override;
+    void onStarted() override;
+    void onMainProcess() override;
 
 private:
     QThread m_;

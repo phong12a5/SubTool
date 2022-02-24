@@ -14,10 +14,12 @@
 #define DEFAULT_KEY "Congaubeo@12345Congaubeo@5678910"
 #define DEFAULT_IV "Congaubeo@555555"
 
+#define MAX_PROFILE_NUMBER          15
 
-#define MAX_THREAD_FIELD "config/max_thread"
-#define TOKEN_FIELD "config/token"
+#define MAX_THREAD_FIELD            "config/max_thread"
+#define TOKEN_FIELD                 "config/token"
+#define LATEST_PROFILE_ID_FIELD     "config/latest_profile_id"
 
-#define CLONE_INFO_FILED "clone_info/"
+#define CLONE_INFO_FILED "data/%1/clone_info/%2"
 
 #endif // APPDEFINE_H

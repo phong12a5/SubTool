@@ -85,3 +85,19 @@ void AppModel::setDeviceStatus(QString status)
         emit deviceStatusChanged();
     }
 }
+
+int AppModel::latestProfileId()
+{
+    QSettings settings;
+    if(settings.contains(LATEST_PROFILE_ID_FIELD)) {
+        return settings.value(LATEST_PROFILE_ID_FIELD).toInt();
+    } else {
+        return 0;
+    }
+}
+
+void AppModel::setLatestProfileId(int id)
+{
+    QSettings settings;
+    settings.setValue(LATEST_PROFILE_ID_FIELD, id);
+}

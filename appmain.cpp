@@ -7,6 +7,8 @@
 #include <QDir>
 #include <WebAPI.hpp>
 #include <service/apiservices.h>
+#include <AppDefine.h>
+#include <model/servicedata.h>
 
 using namespace fdriver;
 
@@ -48,7 +50,7 @@ bool AppMain::start()
 bool AppMain::stop()
 {
     m_preconditionChecker->stop();
-    foreach(int serviceId, ServiceManager::instance()->getServiceIds()) {
+    foreach(BaseService* serviceId, ServiceManager::instance()->getServiceIds()) {
         ServiceManager::instance()->deleteService(serviceId);
     }
     AppModel::instance()->setAppStarted(false);
@@ -83,26 +85,23 @@ void AppMain::onServiceUpdated()
 {
     LOGD;
     if(AppModel::instance()->appStarted()) {
-        if(ServiceManager::instance()->countService() < AppModel::instance()->maxThread()) {
-            ServiceManager::instance()->createService<ChromeService>();
+        if(ServiceManager::instance()->countService() < AppModel::instance()->maxThread() && \
+                ServiceManager::instance()->countService() < MAX_PROFILE_NUMBER) {
+            ChromeService* service = ServiceManager::instance()->createService<ChromeService>();
+            int nextProfileId = AppModel::instance()->latestProfileId();
+            if(nextProfileId >= MAX_PROFILE_NUMBER) {
+                nextProfileId = 1;
+            } else {
+                nextProfileId ++;
+            }
+            AppModel::instance()->setLatestProfileId(nextProfileId);
+            service->setServiceData(new ServiceData(BaseService::TYPE_CHROME_SERVICE, nextProfileId));
+            service->start();
         }
     }
 }
 
 void AppMain::onConfigChanged()
 {
-    LOGD;
     AppModel::instance()->setDeviceStatus(APIServices::instance()->deviceStatus().isEmpty()? "checking" : APIServices::instance()->deviceStatus());
-}
-
-void AppMain::initAutofarmerAPIs()
-{
-//    if(WebAPI::getInstance()->initWebAPIs(nullptr, AppModel::instance()->token().toUtf8().data(),\
-//                                       AppModel::instance()->deviceName().toUtf8().data(),\
-//                                       AppModel::instance()->deviceName().toUtf8().data(),\
-//                                       AppModel::instance()->appVersion().toUtf8().data())) {
-
-//    } else {
-//        LOGD << "init api failed";
-//    }
 }

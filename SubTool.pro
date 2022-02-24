@@ -66,7 +66,7 @@ win32: {
 
     CONFIG(debug, debug|release) {
         LIBS += -L$$PWD/fdriver/libs/debug -lfdriver
-        LIBS += -L$$PWD/autoFarmerAPI/libs/debug/ -lWebAPI
+        LIBS += -L$$PWD/autoFarmerAPI/libs/release/ -lWebAPI
         DEFINES += __DEBUG_MODE__
     }
 

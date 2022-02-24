@@ -33,6 +33,9 @@ public:
 
     QString deviceStatus();
     void setDeviceStatus(QString status);
+
+    int latestProfileId();
+    void setLatestProfileId(int id);
 signals:
     void appStartedChanged();
     void maxThreadChanged();

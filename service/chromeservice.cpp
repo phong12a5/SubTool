@@ -1,4 +1,7 @@
 #include "chromeservice.h"
+#include "model/servicedata.h"
+#include <QTimer>
+#include <WebAPI.hpp>
 
 ChromeService::ChromeService(QObject *parent) :
     BaseService(SERVICE_TYPE::TYPE_CHROME_SERVICE, parent)
@@ -23,24 +26,15 @@ ServiceData *ChromeService::model()
     return m_service_data;
 }
 
-void ChromeService::forceStop()
-{
-    //    static_cast<ChromeWorker*>(m_worker)->forceCloseChrome();
-}
-
-void ChromeService::onSeparateThreadStarted()
+void ChromeService::onStarted()
 {
     LOGD;
     Chrome chrome;
     JsonObject chromeOptions;
 
     std::vector<std::string> args;
-    //    if(m_service_data->getLinkProfile().toStdString() == "") {
-    //        args.push_back( "--user-data-dir=" + QDir::currentPath().toStdString() + "/profiles/" + m_infoClone->getUID().toStdString());
-    //    } else {
-    //        args.push_back( "--user-data-dir=" + m_service_data->getLinkProfile().toStdString() + "/profiles/" + m_infoClone->getUID().toStdString());
-    //    }
-        args.push_back("--ignore-certificate-errors");
+    args.push_back( "--user-data-dir=" + serviceData()->profilePath().toStdString());
+    args.push_back("--ignore-certificate-errors");
 
     //    switch(m_service_data->getProxyKind()){
     //    case PROXY_KIND::HTTP:
@@ -57,28 +51,32 @@ void ChromeService::onSeparateThreadStarted()
         args.push_back("--disable-notifications");
 
 
-    //    chromeOptions.Set<std::vector<std::string>>("args",args);
-    //    chrome.SetChromeOptions(chromeOptions);
-    //    fdriver::Size size;
-    //    size.width = 300;
-    //    size.height = 500;
-    //    QProcess m_process;
-    //    m_process.start("chromedriver.exe");
-    //    m_process.waitForFinished(-1);
-    //    QString output = m_process.readAllStandardOutput();
-    //    QString error = m_process.readAllStandardError();
-
-    //    LOGD <<output;
-    //    LOGD <<error;
-
-
-        LOGD << "Ahihi";
+    chromeOptions.Set<std::vector<std::string>>("args",args);
+    chrome.SetChromeOptions(chromeOptions);
 
         driver = new FDriver(chrome);
     //    driver->GetCurrentWindow().SetPosition(Point(m_service_data->getX(), m_service_data->getY()));
     //    driver->GetCurrentWindow().SetSize(size);
-        driver->Navigate("http://google.com")
-                .FindElement(ByCss("input[name=q]"))
-                .SendKeys("Hello, world!")
-                .Submit();
+        //        driver->Navigate("http://m.facebook.com");
+
+    startMainProcess();
+}
+
+void ChromeService::onMainProcess()
+{
+    LOGD;
+    if(serviceData()->cloneInfo() == nullptr) {
+        std::string result = WebAPI::getInstance()->getClone(nullptr, "facebook");
+        LOGD << "clone: " << result.c_str();
+        QJsonObject cloneInfo = QJsonDocument::fromJson(result.c_str()).object().value("cloneInfo").toObject();
+        LOGD << "cloneInfo: " <<cloneInfo;
+        if(!cloneInfo.isEmpty()) {
+            serviceData()->setCloneInfo(new CloneInfo(cloneInfo));
+            if(serviceData()->cloneInfo()) {
+                serviceData()->cloneInfo()->setAliveStatus("stored");
+            }
+
+            stopMainProcess();
+        }
+    }
 }

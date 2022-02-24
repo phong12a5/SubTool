@@ -3,11 +3,11 @@
 
 #include <QObject>
 #include <QThread>
-//#include "baseworker.h"
 #include "log.h"
 #include "model/cloneinfo.h"
 #include "fdriver/include/fdriver.h"
 #include "fdriver/include/browsers/chrome.h"
+#include <QTimer>
 
 using namespace fdriver;
 
@@ -26,20 +26,23 @@ public:
     virtual ~BaseService();
 
     int type();
-    void startService(QString UID);
+    void start();
     void dispose();
-//    void setInfoClone(CloneInfo* clone);
-//    CloneInfo* getInfoClone() const;
+    void startMainProcess();
+    void stopMainProcess();
 
-    // use this function is dangerous, only use when close app
-    virtual void forceStop();
+    ServiceData* serviceData();
+    void setServiceData(ServiceData* data);
 
 signals:
     void serviceFinished(int serviceId);
 
+private slots:
+    void onThreadStarted();
+
 public slots:
-    virtual void onSeparateThreadStarted();
-//    void onWorkerFinished();
+    virtual void onStarted() = 0;
+    virtual void onMainProcess() = 0;
 
     //Interface
 protected:
@@ -47,9 +50,8 @@ protected:
 
 protected:
     QThread* m_workerThread = nullptr;
-//    BaseWorker* m_worker = nullptr;
     ServiceData* m_service_data = nullptr;
-//    CloneInfo* m_infoClone = nullptr;
+    QTimer* main_process_repeater = nullptr;
 
 private:
     int m_type;

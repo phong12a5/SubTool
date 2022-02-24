@@ -8,6 +8,8 @@
 #include <windows.h>
 #include "AppEnum.h"
 #include "cloneinfo.h"
+#include <service/baseservice.h>
+#include <AppDefine.h>
 
 class ServiceData : public QObject
 {
@@ -23,13 +25,15 @@ public:
         ACCTION_FRIEND_BUTTON
     };
 
-    explicit ServiceData(QObject* parent = nullptr);
+    explicit ServiceData(BaseService::SERVICE_TYPE type, int profileId, QObject* parent = nullptr);
+    ~ServiceData();
 
-    CloneInfo* getCloneInfo() { return m_cloneInfo; }
+    QString profilePath() { return m_profilePath; }
 
-    void  setCloneInfo(CloneInfo* cloneInfo) {
-        m_cloneInfo = cloneInfo;
-    }
+    QString cloneInfokey() { return QString(CLONE_INFO_FILED).arg(m_type_str).arg(m_profileId);}
+
+    CloneInfo* cloneInfo();
+    void  setCloneInfo(CloneInfo* cloneInfo);
 
     void setLinkProfile(QString url) {
         m_linkProfile = url;
@@ -96,7 +100,19 @@ public:
     }
 
     QString pathUploadProfile(QString url);
+
 private:
+    void loadCloneInfo();
+
+private slots:
+    void onCloneInfoChanged(QString action = "");
+
+private:
+    BaseService::SERVICE_TYPE m_type;
+    QString m_type_str;
+    int m_profileId;
+    QString m_profileFolderPath;
+    QString m_profilePath;
     CloneInfo* m_cloneInfo;
     std::string m_2Fa;
     int m_numberThread;

@@ -13,27 +13,19 @@ public:
     void start();
     void stop();
 
-    QList<int> getServiceIds();
+    QList<BaseService*> getServiceIds();
     int countService();
-    void deleteService(int serviceId);
+    void deleteService(BaseService * serviceId);
     QList<BaseService *> listService();
 
     template<typename T>
-    T* getService(int serviceId){
-        T* service = reinterpret_cast<T*>(serviceId);
-        LOGD << "ServiceManager serviceId: " << serviceId;
-        return service;
-   }
-
-
-    template<typename T>
-    int createService() {
+    T* createService() {
         T* service = new T();
         LOGD << " : " << service;
         m_listService.append(service);
         connect(service, &BaseService::started, this,&ServiceManager::serviceUpdated);
         connect(service, &BaseService::finished, this,&ServiceManager::serviceUpdated);
-        return reinterpret_cast<int>(service);
+        return service;
     }
 
 signals:
