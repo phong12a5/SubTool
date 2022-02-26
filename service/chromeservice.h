@@ -17,6 +17,13 @@ public:
     void connectSignalSlots() override;
     ServiceData* model();
 
+private:
+    void initChromeDriver();
+    void getProxy();
+    void getClone();
+
+    void login();
+
 public slots:
     void onStarted() override;
     void onMainProcess() override;

@@ -24,9 +24,6 @@ public slots:
     void onConfigChanged();
 
 private:
-    void initAutofarmerAPIs();
-
-private:
     static AppMain* m_instance;
     QProcess* m_chromeDriverProcess = nullptr;
     QTimer* m_preconditionChecker;

@@ -57,6 +57,9 @@ void ServiceData::setCloneInfo(CloneInfo *cloneInfo)
     }
     if(m_cloneInfo != cloneInfo) {
         m_cloneInfo = cloneInfo;
+
+        // random userAgent
+
         connect(m_cloneInfo, &CloneInfo::cloneInfoChanged, this, &ServiceData::onCloneInfoChanged );
         onCloneInfoChanged();
     }

@@ -79,14 +79,14 @@ public:
         m_serviceID = num;
     }
     int getServiceID() {
-        LOGD << "getServiceID is delete: " << m_serviceID;
         return m_serviceID;
     }
 
-    void setProxyChromWorker(QString proxy) {
+    void setProxy(QString proxy) {
+        LOGD << proxy;
         m_proxy = proxy;
     }
-    QString getProxyChromWorker() {
+    QString getProxy() {
         return m_proxy;
     }
 

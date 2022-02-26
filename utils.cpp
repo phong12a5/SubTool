@@ -1,5 +1,8 @@
 #include "utils.h"
 #include <QStringList>
+#include <QThread>
+#include <QProcess>
+#include <log.h>
 
 int compareVersion(QString version1, QString version2)
 {
@@ -49,4 +52,26 @@ bool checkVersionFormat(QString verion)
             return true;
         }
     }
+}
+
+bool ping(QString host) {
+#if defined(WIN32)
+    QString parameter = "-n 1";
+#else
+  QString parameter = "-c 1";
+#endif
+    QString cmd = "ping -n 1 " + host;
+    int exitCode = QProcess::execute(cmd);
+    LOGD << cmd << " result: " << (exitCode == 0? "OK" : "KO");
+    return exitCode == 0;
+}
+
+void delay(int milsec) {
+    QThread::msleep(milsec);
+}
+
+int random(int min, int max)
+{
+    int randomValue = qrand() % max + min;
+    return randomValue;
 }

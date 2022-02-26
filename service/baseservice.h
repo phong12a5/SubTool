@@ -21,6 +21,14 @@ public:
       TYPE_CHROME_SERVICE = 0,
       TYPE_FIREFOX_SERVICE
     };
+
+    enum BY : int {
+        BY_NAME = 0,
+        BY_CLASS,
+        BY_XPATH,
+        BY_LINK_TEXT,
+        BY_ID
+    };
 public:
     explicit BaseService(SERVICE_TYPE type, QObject *parent = nullptr);
     virtual ~BaseService();
@@ -48,6 +56,9 @@ public slots:
 protected:
     virtual void connectSignalSlots() = 0;
     void setCookies(QString cookies);
+    bool inputText(QString textInput, By by);
+    bool click(By by);
+    bool ElementExist(const fdriver::By &by);
 
 protected:
     QThread* m_workerThread = nullptr;

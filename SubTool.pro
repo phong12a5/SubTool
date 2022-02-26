@@ -70,6 +70,16 @@ win32: {
         DEFINES += __DEBUG_MODE__
     }
 
+    contains(QT_ARCH, i386) {
+        message("x86 build")
+        INCLUDEPATH += $$PWD/chilkat/chilkat-9.5.0-mingw-4.9.2-32/include
+        LIBS += -L$$PWD/chilkat/chilkat-9.5.0-mingw-4.9.2-32 -lchilkat-9.5.0 -lws2_32 -lcrypt32 -ldnsapi
+    } else {
+        message("x86_64 build")
+        INCLUDEPATH += $$PWD/chilkat/chilkat-9.5.0-mingw-4.9.2-64/include
+        LIBS += -L$$PWD/chilkat/chilkat-9.5.0-mingw-4.9.2-64 -lchilkat-9.5.0 -lws2_32 -lcrypt32 -ldnsapi
+    }
+
     #copy chromedriver.exe to output folder
     !exists( $$OUT_PWD/chromedriver.exe) {
         QMAKE_POST_LINK += copy /y "$$shell_path($$PWD/chromedriver.exe)" "$$shell_path($$OUT_PWD)"
@@ -86,4 +96,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     resource.qrc \
     qml.qrc
+
+DISTFILES += \
+    model/definitions.json
 

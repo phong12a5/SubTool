@@ -4,9 +4,15 @@
 #include <QQmlContext>
 #include <appmain.h>
 #include <appmodel.h>
+#include <CkGlobal.h>
+
+static CkGlobal glob;
+bool unlockChilkat();
 
 int main(int argc, char *argv[])
 {
+    if(!unlockChilkat()) return 1;
+
     QProcess::execute("Taskkill /IM chromedriver.exe /F");
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -26,4 +32,26 @@ int main(int argc, char *argv[])
     engine.load(url);
 
     return app.exec();
+}
+
+bool unlockChilkat()
+{
+    LOGD << "unlockChilkat";
+    bool success_global = glob.UnlockBundle("AUTFRM.CB4082023_Pz2Ry7az86p4");
+    if (!success_global)
+    {
+        LOGD << "Error: " << glob.lastErrorText();
+        return false;
+    }
+
+    int status = glob.get_UnlockStatus();
+    if (status == 2)
+    {
+        LOGD << "Unlocked using purchased unlock code.";
+    }
+    else
+    {
+        LOGD << "Unlocked in trial mode.";
+    }
+    return true;
 }

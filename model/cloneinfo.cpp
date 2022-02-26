@@ -1,6 +1,5 @@
 #include "cloneinfo.h"
 #include "log.h"
-//#include "controllermainthread.h"
 
 CloneInfo::CloneInfo(QJsonObject cloneInfo)
 {
@@ -73,6 +72,7 @@ QString CloneInfo::userAgent()
 
 void CloneInfo::setUserAgent(QString userAgent)
 {
+    LOGD << userAgent;
     if(this->userAgent() != userAgent) {
         m_cloneInfo[CLONE_INFO_FIELD_USER_AGENT] = userAgent;
         emit cloneInfoChanged();

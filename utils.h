@@ -21,4 +21,10 @@ int compareVersion(QString version1, QString version2);
  */
 bool checkVersionFormat(QString verion);
 
+bool ping(QString host);
+
+void delay(int milsec);
+
+int random(int min, int max);
+
 #endif // UTILS_H

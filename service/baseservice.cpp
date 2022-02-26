@@ -3,6 +3,7 @@
 #include "servicemanager.h"
 #include <QDir>
 #include <QProcess>
+#include <utils.h>
 
 BaseService::BaseService(SERVICE_TYPE type, QObject *parent)
     : QObject(parent),
@@ -134,4 +135,42 @@ void BaseService::setCookies(QString cookies)
         LOGD << "cant not finl element";
     }
 
+}
+
+bool BaseService::inputText(QString textInput, By by)
+{
+    try {
+        auto parts = textInput.split(QString());
+        Element element = driver->FindElement(by);
+        for (int i = 1; i < parts.length(); i++) {
+            delay(random(200, 400));
+            element.SendKeys(parts[i].toStdString());
+        }
+        return true;
+    } catch (const std::exception& ex) {
+        LOGD << ex.what();
+        return false;
+    }
+}
+
+bool BaseService::click(By by)
+{
+    try {
+        Element element = driver->FindElement(by);
+        element.Click();
+        return true;
+    } catch (const std::exception& ex) {
+        LOGD << ex.what();
+        return false;
+    }
+}
+
+bool BaseService::ElementExist(const fdriver::By &by)
+{
+    try {
+        driver->FindElement(by);
+        return true;
+    } catch(...) {
+        return false;
+    }
 }
