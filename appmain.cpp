@@ -57,6 +57,18 @@ bool AppMain::stop()
     return true;
 }
 
+void AppMain::setWindowProp(ServiceData* model, int index)
+{
+    int serviceCount = AppModel::instance()->runningBrowser();
+    int screenWidth = AppModel::instance()->screen_width();
+//    int screenHeight = AppModel::instance()->screen_height();
+    float screenRatio = 4/3;
+
+    int targetWidth = screenWidth/serviceCount, targetHeight = targetWidth * screenRatio;
+    model->setWindowSize(QSize(targetWidth, targetHeight));
+    model->setWindowPosition(QPoint(targetWidth * index, 0));
+}
+
 void AppMain::onCheckPrecondition()
 {
     LOGD;
@@ -87,7 +99,6 @@ void AppMain::onServiceUpdated()
     if(AppModel::instance()->appStarted()) {
         if(ServiceManager::instance()->countService() < AppModel::instance()->maxThread() && \
                 ServiceManager::instance()->countService() < MAX_PROFILE_NUMBER) {
-            ChromeService* service = ServiceManager::instance()->createService<ChromeService>();
             int nextProfileId = AppModel::instance()->latestProfileId();
             if(nextProfileId >= MAX_PROFILE_NUMBER) {
                 nextProfileId = 1;
@@ -95,7 +106,7 @@ void AppMain::onServiceUpdated()
                 nextProfileId ++;
             }
             AppModel::instance()->setLatestProfileId(nextProfileId);
-            service->setServiceData(new ServiceData(BaseService::TYPE_CHROME_SERVICE, nextProfileId));
+            ChromeService* service = ServiceManager::instance()->createService<ChromeService>(nextProfileId);
             service->start();
         }
     }

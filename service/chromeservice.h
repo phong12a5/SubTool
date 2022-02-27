@@ -11,7 +11,7 @@ class ChromeService : public BaseService
 {
     Q_OBJECT
 public:
-    explicit ChromeService(QObject *parent = nullptr);
+    explicit ChromeService(int profileId, QObject *parent = nullptr);
     ~ChromeService();
 
     void connectSignalSlots() override;

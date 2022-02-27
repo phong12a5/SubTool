@@ -30,7 +30,7 @@ public:
         BY_ID
     };
 public:
-    explicit BaseService(SERVICE_TYPE type, QObject *parent = nullptr);
+    explicit BaseService(SERVICE_TYPE type, int profileId, QObject *parent = nullptr);
     virtual ~BaseService();
 
     int type();
@@ -60,13 +60,14 @@ protected:
     bool click(By by);
     bool ElementExist(const fdriver::By &by);
 
+    void finishLifecycle();
+
 protected:
     QThread* m_workerThread = nullptr;
     ServiceData* m_service_data = nullptr;
     QTimer* main_process_repeater = nullptr;
-
-private:
     int m_type;
+    int m_profileId;
 
 protected:
     FDriver *driver = nullptr;

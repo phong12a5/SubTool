@@ -2,6 +2,8 @@
 #include <QCoreApplication>
 #include "log.h"
 #include "AppDefine.h"
+#include <QApplication>
+#include <QScreen>
 
 AppModel* AppModel::sInstance = nullptr;
 
@@ -100,4 +102,26 @@ void AppModel::setLatestProfileId(int id)
 {
     QSettings settings;
     settings.setValue(LATEST_PROFILE_ID_FIELD, id);
+}
+
+int AppModel::runningBrowser()
+{
+    return m_running_browsers;
+}
+
+void AppModel::setRunningBrowser(int count)
+{
+    if(m_running_browsers != count) {
+        m_running_browsers = count;
+    }
+}
+
+int AppModel::screen_width()
+{
+    return QGuiApplication::primaryScreen()->geometry().width();
+}
+
+int AppModel::screen_height()
+{
+    return QGuiApplication::primaryScreen()->geometry().height();
 }

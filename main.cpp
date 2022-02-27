@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("AppMain", AppMain::instance());
     engine.rootContext()->setContextProperty("AppModel", AppModel::instance());
 
+    LOGD << "[" << AppModel::instance()->screen_width() << "," << AppModel::instance()->screen_height() << "]";
+
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {

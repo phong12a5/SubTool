@@ -28,12 +28,10 @@ QString getRandomUserAgent()
     return listUserAgen.at(res).toString();
 }
 
-ChromeService::ChromeService(QObject *parent) :
-    BaseService(SERVICE_TYPE::TYPE_CHROME_SERVICE, parent)
+ChromeService::ChromeService(int profileId, QObject *parent) :
+    BaseService(SERVICE_TYPE::TYPE_CHROME_SERVICE,profileId, parent)
 {
-//    LOGD << "--------- ChromeService ---------";
-//    m_worker->setSerivceData(m_service_data);
-    connectSignalSlots();
+    LOGD << "--------- ChromeService: " << profileId << " ---------";
 }
 
 ChromeService::~ChromeService()
@@ -64,35 +62,26 @@ void ChromeService::initChromeDriver()
     if(serviceData()->cloneInfo()->userAgent().isEmpty()) {
         serviceData()->cloneInfo()->setUserAgent(getRandomUserAgent());
     }
-//    args.push_back("--user-agent=" + serviceData()->cloneInfo()->userAgent().toStdString());
-    args.push_back("--user-agent=Mozilla/5.0 (Linux; Android 8.1.0; SM-G610F Build/M1AJQ) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/87.0.4280.66 Mobile Safari/537.36");
-    args.push_back("--lang=en");
-    args.push_back("--disable-blink-features=AutomationControlled");
-    args.push_back("--no-sandbox");
-    args.push_back("user-agent=#{linux_useragent}");
-    args.push_back("--disable-web-security");
-    args.push_back("--disable-xss-auditor");
-//    args.push_back("excludeSwitches", ["enable-automation", "load-extension"])
-    //--lang=es
     args.push_back("--disable-notifications");
     chromeOptions.Set<std::vector<std::string>>("args",args);
+
+    std::vector<std::string> switches;
+    switches.push_back("enable-automation");
+    switches.push_back("load-extension");
+    chromeOptions.Set<std::vector<std::string>>("excludeSwitches",switches);
+
+    picojson::value sourceJson = static_cast<picojson::value>(JsonObject().\
+                                                              Set("intl.accept_languages", "en,en_US").\
+                                                                Set("profile.password_manager_enabled", false).\
+                                                                Set("credentials_enable_service", false));
+    chromeOptions.Set<picojson::value>("prefs",sourceJson);
     chrome.SetChromeOptions(chromeOptions);
 
     driver = new FDriver(chrome);
-//    picojson::value sourceJson = static_cast<picojson::value>(JsonObject()
-//                                                              .Set("source", "\
-//                                                                   Object.defineProperty(navigator, 'webdriver', {\
-//                                                                     get: () => undefined\
-//                                                                   }),\
-//                                                                   Object.defineProperty(navigator, 'languages', {\
-//                                                                     get: () => ['en-US', 'en']\
-//                                                                   }),\
-//                                                                   Object.defineProperty(navigator, 'platform', {\
-//                                                                     get: () => \"Android\"\
-//                                                                   })"));
-//    driver->Execute("Page.addScriptToEvaluateOnNewDocument", JsArgs() << sourceJson);
+    driver->Execute("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
 
-    driver->Navigate("http://m.facebook.com");
+//    driver->Navigate("https://httpbin.org/headers");
+    driver->Navigate("https://m.facebook.com");
 }
 
 void ChromeService::getProxy()
@@ -187,6 +176,7 @@ void ChromeService::login()
 void ChromeService::onStarted()
 {
     LOGD;
+    setServiceData(new ServiceData(BaseService::TYPE_CHROME_SERVICE, m_profileId));
     startMainProcess();
 }
 
@@ -202,14 +192,25 @@ void ChromeService::onMainProcess()
         if(driver == Q_NULLPTR) {
             initChromeDriver();
         } else {
+            QString url = driver->GetUrl().c_str();
+            if(url.contains("what's-new")) {
+                driver->CloseCurrentWindow();
+            }
             if(ElementExist(ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) ||
                     ElementExist(ById("approvals_code"))) {
                 login();
-            } else if(ElementExist(ByXPath("*[contains(text(), 'Nhớ trình duyệt')]")) &&
-                      ElementExist(ByXPath("*[contains(text(), 'Lưu trình duyệt')]"))) {
+            } else if(ElementExist(ByXPath("//*[contains(@value, 'save_device')]")) &&
+                      ElementExist(ByXPath("//*[contains(@value, 'dont_save')]"))) {
                 click(ByName("submit[Continue]"));
+            } else if(url.contains("%2Fcheckpoint%2F") ||
+                      url.contains("282/")) {
+                LOGD << "CHECKPOINT";
+                serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
+                finishLifecycle();
+            } else if(ElementExist(ById("m_news_feed_stream"))) {
+                LOGD << "NEW FEED SCREEN";
+                serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
             }
         }
-
     }
 }

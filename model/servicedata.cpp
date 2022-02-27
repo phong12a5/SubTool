@@ -39,10 +39,12 @@ ServiceData::ServiceData(BaseService::SERVICE_TYPE type, int profileId, QObject 
 
 ServiceData::~ServiceData()
 {
+    LOGD;
     if(m_cloneInfo) {
         delete m_cloneInfo;
         m_cloneInfo = nullptr;
     }
+    LOGD << "done";
 }
 
 CloneInfo *ServiceData::cloneInfo()
@@ -54,40 +56,17 @@ void ServiceData::setCloneInfo(CloneInfo *cloneInfo)
 {
     if(m_cloneInfo) {
         delete m_cloneInfo;
+        m_cloneInfo = nullptr;
     }
+
     if(m_cloneInfo != cloneInfo) {
         m_cloneInfo = cloneInfo;
 
         // random userAgent
-
-        connect(m_cloneInfo, &CloneInfo::cloneInfoChanged, this, &ServiceData::onCloneInfoChanged );
-        onCloneInfoChanged();
-    }
-}
-
-QString ServiceData::pathUploadProfile(QString url)
-{
-    QDir dir(url);
-    QStringList finters;
-    finters << "*.jpg" << "*.jpeg" << "*.jpe" << "*.jif" << "*.jfif" << "*.jfi" << "*.webp" <<
-               "*.gif" << "*.png" << "*.apng" << "*.bmp" << "*.dib" << "*.tiff" << "*.tif" <<
-               "*.svg" << "*.svgz" << "*.ico" << "*.xbm" ;
-    dir.setNameFilters(finters);
-    QFileInfoList files = dir.entryInfoList();
-    QStringList lisImage;
-    foreach (QFileInfo fileInfo, files) {
-        QString path=fileInfo.absoluteFilePath();
-        lisImage.append(path);
-        QFile file(path);
-        if(!file.exists()){
-            LOGD << "This file is not exist";
-        }else{
-            LOGD << "This file was found " << file.fileName();
+        if(m_cloneInfo) {
+            connect(m_cloneInfo, &CloneInfo::cloneInfoChanged, this, &ServiceData::onCloneInfoChanged );
         }
     }
-    LOGD << "files.length(): " << files.length();
-    m_linkImage = lisImage.at(random(files.length() - 1));
-    return m_linkImage;
 }
 
 void ServiceData::loadCloneInfo()
@@ -106,7 +85,7 @@ void ServiceData::loadCloneInfo()
 
 void ServiceData::onCloneInfoChanged(QString action)
 {
-    LOGD;
+    LOGD << action;
     if(action != "" && m_cloneInfo != nullptr) {
         WebAPI::getInstance()->updateClone(nullptr,
                                            action.toUtf8().data(),
@@ -119,5 +98,10 @@ void ServiceData::onCloneInfoChanged(QString action)
         settings.setValue(cloneInfokey(), m_cloneInfo->toJson());
     } else {
         settings.setValue(cloneInfokey(), QJsonObject());
+        if(m_cloneInfo && m_cloneInfo->aliveStatus() == CLONE_ALIVE_STATUS_CHECKPOINT) {
+            delete m_cloneInfo;
+            m_cloneInfo = nullptr;
+        }
     }
+    LOGD << "done";
 }

@@ -19,8 +19,8 @@ public:
     QList<BaseService *> listService();
 
     template<typename T>
-    T* createService() {
-        T* service = new T();
+    T* createService(int profileId) {
+        T* service = new T(profileId);
         LOGD << " : " << service;
         m_listService.append(service);
         connect(service, &BaseService::started, this,&ServiceManager::serviceUpdated);

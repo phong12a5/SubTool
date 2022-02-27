@@ -6,6 +6,8 @@
 #include <QProcess>
 #include <QTimer>
 
+class ServiceData;
+
 class AppMain : public QObject
 {
     Q_OBJECT
@@ -17,6 +19,9 @@ public:
 
     Q_INVOKABLE bool start();
     Q_INVOKABLE bool stop();
+
+private:
+    void setWindowProp(ServiceData* model, int index);
 
 public slots:
     void onCheckPrecondition();

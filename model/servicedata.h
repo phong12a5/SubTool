@@ -10,6 +10,8 @@
 #include "cloneinfo.h"
 #include <service/baseservice.h>
 #include <AppDefine.h>
+#include <QSize>
+#include <QPoint>
 
 class ServiceData : public QObject
 {
@@ -43,36 +45,24 @@ public:
         return m_linkProfile;
     }
 
-    void setNumberChrom(int num) {
-        m_numberThread = num;
-        setX(num);
-        setY(num);
-    }
-
     int numberChrom() {
         return m_numberThread;
     }
 
-    void setX(int numberThread) {
-        m_xPosstion = 470*(numberThread % 4);
-
-    }
-    int getX() {
-        return m_xPosstion;
-    }
-    void setY(int numberThread) {
-        m_yPossition = 500 * (numberThread/4);
-    }
-    int getY() {
-        return m_yPossition;
+    QPoint windowPosition() {
+        return m_posstion;
     }
 
-    int random(int maxRan) {
-        srand(time(NULL));
-        int res = rand() % maxRan + 1;
-        int ranSlep = rand() % 200 + 100;
-        Sleep(ranSlep);
-        return res;
+    void setWindowPosition(QPoint pos) {
+        m_posstion = pos;
+    }
+
+    QSize windowSize() {
+        return m_windowSize;
+    }
+
+    void setWindowSize(QSize size) {
+        m_windowSize = size;;
     }
 
     void setServiceID(int num) {
@@ -98,9 +88,6 @@ public:
     PROXY_KIND getProxyKind() const{
         return m_proxyKind;
     }
-
-    QString pathUploadProfile(QString url);
-
 private:
     void loadCloneInfo();
 
@@ -123,6 +110,8 @@ private:
     QString m_proxy;
     PROXY_KIND m_proxyKind = PROXY_KIND::HTTP;
     QString m_linkProfile;
+    QPoint m_posstion;
+    QSize m_windowSize;
 };
 
 #endif // SERVICEDATA_H

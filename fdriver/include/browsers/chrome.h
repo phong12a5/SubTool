@@ -23,7 +23,7 @@ struct Chrome : Capabilities { // copyable
 		: Capabilities(defaults) {
 		SetBrowserName(browser::Chrome);
 		SetVersion("");
-		SetPlatform(platform::Any);
+                SetPlatform(platform::Android);
 	}
 
 	// See https://sites.google.com/a/chromium.org/chromedriver/capabilities for details
@@ -31,7 +31,7 @@ struct Chrome : Capabilities { // copyable
 	FDRIVER_PROPERTY(LoggingPrefs, "loggingPrefs", LoggingPrefs)
 	FDRIVER_PROPERTY(Args, "args", std::vector<std::string>)
 	FDRIVER_PROPERTY(Binary, "binary", std::string)
-    FDRIVER_PROPERTY(ChromeOptions, "chromeOptions", JsonObject)
+        FDRIVER_PROPERTY(ChromeOptions, "chromeOptions", JsonObject)
 
    	// Each extension is a base64-encoded .crx file
 	FDRIVER_PROPERTY(Extensions, "extensions", std::vector<std::string>)

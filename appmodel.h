@@ -36,6 +36,12 @@ public:
 
     int latestProfileId();
     void setLatestProfileId(int id);
+
+    int runningBrowser();
+    void setRunningBrowser(int count);
+
+    int screen_width();
+    int screen_height();
 signals:
     void appStartedChanged();
     void maxThreadChanged();
@@ -49,6 +55,7 @@ private:
     int m_maxThread;
     QString m_token;
     QString m_deviceStatus;
+    int m_running_browsers;
 };
 
 #endif // APPMODEL_H

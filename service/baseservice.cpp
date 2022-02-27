@@ -5,9 +5,10 @@
 #include <QProcess>
 #include <utils.h>
 
-BaseService::BaseService(SERVICE_TYPE type, QObject *parent)
+BaseService::BaseService(SERVICE_TYPE type, int profileId, QObject *parent)
     : QObject(parent),
-      m_type(type)
+      m_type(type),
+      m_profileId(profileId)
 {
     m_workerThread = new QThread();
     this->moveToThread(m_workerThread);
@@ -33,6 +34,7 @@ BaseService::~BaseService()
         delete main_process_repeater;
         main_process_repeater = nullptr;
     }
+    LOGD << "done";
 }
 
 int BaseService::type()
@@ -48,7 +50,6 @@ void BaseService::start()
 void BaseService::dispose()
 {
     m_workerThread->quit();
-    m_workerThread->wait();
 }
 
 void BaseService::startMainProcess()
@@ -173,4 +174,10 @@ bool BaseService::ElementExist(const fdriver::By &by)
     } catch(...) {
         return false;
     }
+}
+
+void BaseService::finishLifecycle()
+{
+    main_process_repeater->stop();
+    m_workerThread->quit();
 }
