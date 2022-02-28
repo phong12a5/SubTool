@@ -23,6 +23,7 @@ private:
     void getClone();
 
     void login();
+    void followByPage();
 
 public slots:
     void onStarted() override;
