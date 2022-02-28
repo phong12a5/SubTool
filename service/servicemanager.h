@@ -15,7 +15,7 @@ public:
 
     QList<BaseService*> getServiceIds();
     int countService();
-    void deleteService(BaseService * serviceId);
+    void stopService(BaseService * serviceId);
     QList<BaseService *> listService();
 
     template<typename T>
@@ -23,10 +23,14 @@ public:
         T* service = new T(profileId);
         LOGD << " : " << service;
         m_listService.append(service);
-        connect(service, &BaseService::started, this,&ServiceManager::serviceUpdated);
-        connect(service, &BaseService::finished, this,&ServiceManager::serviceUpdated);
+        connect(service, &BaseService::started, this,&ServiceManager::onServiceStarted);
+        connect(service, &BaseService::finished, this,&ServiceManager::onServiceFinished);
         return service;
     }
+
+public slots:
+    void onServiceStarted(BaseService* service);
+    void onServiceFinished(BaseService* service);
 
 signals:
     void serviceUpdated();

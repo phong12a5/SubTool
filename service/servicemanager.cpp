@@ -30,10 +30,7 @@ ServiceManager::ServiceManager(QObject *parent) : QObject(parent)
 
 ServiceManager::~ServiceManager()
 {
-    foreach(BaseService* serviceId, getServiceIds()) {
-        deleteService(serviceId);
-    }
-    LOGD;
+
 }
 
 int ServiceManager::countService()
@@ -41,14 +38,25 @@ int ServiceManager::countService()
     return m_listService.count();
 }
 
-void ServiceManager::deleteService(BaseService * service)
+void ServiceManager::stopService(BaseService * service)
 {
-    if(m_listService.removeOne(service)) {
-        service->dispose();
-    }
+    service->dispose();
 }
 
 QList<BaseService *> ServiceManager::listService()
 {
     return m_listService;
+}
+
+void ServiceManager::onServiceStarted(BaseService *service)
+{
+    LOGD << service;
+}
+
+void ServiceManager::onServiceFinished(BaseService *service)
+{
+    if(m_listService.contains(service) && m_listService.removeOne(service)) {
+        delete service;
+        serviceUpdated();
+    }
 }

@@ -12,17 +12,19 @@ BaseService::BaseService(SERVICE_TYPE type, int profileId, QObject *parent)
 {
     m_workerThread = new QThread();
     this->moveToThread(m_workerThread);
-    connect(m_workerThread, &QThread::finished, m_workerThread, &QThread::deleteLater);
-    connect(m_workerThread, &QThread::finished, this, &QObject::deleteLater);
     connect(m_workerThread, &QThread::started, this, &BaseService::onThreadStarted);
+    connect(m_workerThread, &QThread::finished, this, &BaseService::onThreadFinished);
 }
 
 BaseService::~BaseService()
 {
-    LOGD;
-    emit finished();
     if(nullptr != driver) {
         delete driver;
+    }
+
+    if(nullptr != m_workerThread) {
+        delete m_workerThread;
+        m_workerThread = nullptr;
     }
 
     if(nullptr != m_service_data) {
@@ -34,7 +36,6 @@ BaseService::~BaseService()
         delete main_process_repeater;
         main_process_repeater = nullptr;
     }
-    LOGD << "done";
 }
 
 int BaseService::type()
@@ -76,13 +77,22 @@ void BaseService::setServiceData(ServiceData* data)
 
 void BaseService::onThreadStarted()
 {
-    main_process_repeater = new QTimer();
-    main_process_repeater->setInterval(2000);
-    main_process_repeater->setSingleShot(false);
-    connect(main_process_repeater, &QTimer::timeout, this, &BaseService::onMainProcess);
+    LOGD;
+    if(main_process_repeater == nullptr) {
+        main_process_repeater = new QTimer();
+        main_process_repeater->setInterval(2000);
+        main_process_repeater->setSingleShot(false);
+        connect(main_process_repeater, &QTimer::timeout, this, &BaseService::onMainProcess);
+    }
 
     onStarted();
-    emit started();
+    emit started(this);
+}
+
+void BaseService::onThreadFinished()
+{
+    LOGD;
+    emit finished(this);
 }
 
 void BaseService::setCookies(QString cookies)
@@ -176,8 +186,9 @@ bool BaseService::ElementExist(const fdriver::By &by)
     }
 }
 
-void BaseService::finishLifecycle()
+void BaseService::finish()
 {
-    main_process_repeater->stop();
-    m_workerThread->quit();
+    LOGD;
+    stopMainProcess();
+    dispose();
 }

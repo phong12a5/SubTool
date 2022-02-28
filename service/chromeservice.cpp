@@ -196,20 +196,29 @@ void ChromeService::onMainProcess()
             if(url.contains("what's-new")) {
                 driver->CloseCurrentWindow();
             }
+
             if(ElementExist(ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) ||
                     ElementExist(ById("approvals_code"))) {
                 login();
             } else if(ElementExist(ByXPath("//*[contains(@value, 'save_device')]")) &&
                       ElementExist(ByXPath("//*[contains(@value, 'dont_save')]"))) {
                 click(ByName("submit[Continue]"));
+            } else if(ElementExist(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"))) {
+                click(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"));
             } else if(url.contains("%2Fcheckpoint%2F") ||
                       url.contains("282/")) {
                 LOGD << "CHECKPOINT";
                 serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
-                finishLifecycle();
+
+                driver->Get("chrome://settings/clearBrowserData");
+                delay(10);
+                driver->SendKeys("Enter");
+
+                finish();
             } else if(ElementExist(ById("m_news_feed_stream"))) {
                 LOGD << "NEW FEED SCREEN";
                 serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
+//                finish();
             }
         }
     }

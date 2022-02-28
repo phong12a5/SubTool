@@ -47,6 +47,7 @@ signals:
 
 private slots:
     void onThreadStarted();
+    void onThreadFinished();
 
 public slots:
     virtual void onStarted() = 0;
@@ -60,7 +61,7 @@ protected:
     bool click(By by);
     bool ElementExist(const fdriver::By &by);
 
-    void finishLifecycle();
+    void finish();
 
 protected:
     QThread* m_workerThread = nullptr;
@@ -73,8 +74,8 @@ protected:
     FDriver *driver = nullptr;
 
 signals:
-    void finished();
-    void started();
+    void finished(BaseService* /*this*/);
+    void started(BaseService* /*this*/);
 };
 
 #endif // BASESERVICE_H

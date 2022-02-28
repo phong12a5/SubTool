@@ -51,7 +51,7 @@ bool AppMain::stop()
 {
     m_preconditionChecker->stop();
     foreach(BaseService* serviceId, ServiceManager::instance()->getServiceIds()) {
-        ServiceManager::instance()->deleteService(serviceId);
+        ServiceManager::instance()->stopService(serviceId);
     }
     AppModel::instance()->setAppStarted(false);
     return true;
