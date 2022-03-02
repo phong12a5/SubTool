@@ -186,6 +186,16 @@ bool BaseService::ElementExist(const fdriver::By &by)
     }
 }
 
+bool BaseService::FindElement(Element &element, const By &by)
+{
+    try {
+        element = driver->FindElement(by);
+        return true;
+    } catch(...) {
+        return false;
+    }
+}
+
 void BaseService::finish()
 {
     LOGD;

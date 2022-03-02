@@ -24,6 +24,7 @@ private:
 
     void login();
     void followByPage();
+    bool getPagesOfUid();
 
 
     bool checkProxy(QString ip, int port);

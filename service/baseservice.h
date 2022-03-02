@@ -60,6 +60,7 @@ protected:
     bool inputText(QString textInput, By by);
     bool click(By by);
     bool ElementExist(const fdriver::By &by);
+    bool FindElement(Element& element, const fdriver::By &by);
 
     void finish();
 
