@@ -25,6 +25,8 @@ private:
     void login();
     void followByPage();
 
+
+    bool checkProxy(QString ip, int port);
 public slots:
     void onStarted() override;
     void onMainProcess() override;

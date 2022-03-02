@@ -13,6 +13,7 @@
 #include <CkHttpRequest.h>
 #include <CkHttpResponse.h>
 #include <QRandomGenerator>
+#include <appmodel.h>
 
 QString getRandomUserAgent()
 {
@@ -72,12 +73,14 @@ void ChromeService::initChromeDriver()
 #endif
 
     args.push_back("--disable-notifications");
+    args.push_back("--window-position=1500,0");
     chromeOptions.Set<std::vector<std::string>>("args",args);
 
     std::vector<std::string> switches;
     switches.push_back("enable-automation");
     switches.push_back("load-extension");
     chromeOptions.Set<std::vector<std::string>>("excludeSwitches",switches);
+
 
 
     JsonObject sourceJson = JsonObject();
@@ -87,12 +90,26 @@ void ChromeService::initChromeDriver()
     chromeOptions.Set<picojson::value>("prefs", static_cast<picojson::value>(sourceJson));
 
     JsonObject mobileEmulation = JsonObject();
-    mobileEmulation.Set("deviceName", "iPhone X");
+    mobileEmulation.Set("deviceName", "iPhone 8 Plus");
     chromeOptions.Set<picojson::value>("mobileEmulation",static_cast<picojson::value>(mobileEmulation));
 
     chrome.SetChromeOptions(chromeOptions);
 
     driver = new FDriver(chrome);
+
+    int width = 375;
+    int height = 812;
+
+    static int max_width = 0, max_height = 0;
+    if(max_width == 0 || max_height == 0) {
+        Window window = driver->GetCurrentWindow().Maximize();
+        max_width = window.GetSize().width;
+        max_height = window.GetSize().height;
+    }
+    Point point = Point(QRandomGenerator::global()->bounded(max_width - width), 0);;
+    driver->GetCurrentWindow().SetPosition(point);
+    Size size; size.width = width; size.height = height;
+    driver->GetCurrentWindow().SetSize(size);
     driver->Execute("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
 
     driver->Navigate("https://m.facebook.com");
@@ -139,14 +156,8 @@ void ChromeService::getProxy()
     QString ip = "45.77.128.27";
     int port = QRandomGenerator::global()->bounded(10000, 11000);
     QString cgbProxy = ip + ":" + QString::number(port);
-    CkHttp http;
-    http.put_ProxyDomain("45.77.128.27");
-    http.put_ProxyPort(port);
-    const char * html = http.quickGetStr("https://www.google.com.vn/");
-    if(html) {
+    if(checkProxy(ip, port)) {
         serviceData()->setProxy(cgbProxy);
-    } else {
-        LOGD << "proxy died";
     }
 #endif
 }
@@ -191,6 +202,7 @@ void ChromeService::login()
             if(secretkey.isEmpty()) {
                 return;
             } else {
+                delay(random(1000, 2000));
                 inputText(WebAPI::getInstance()->tOTP(secretkey.toUtf8().data()).c_str()\
                       ,ById("approvals_code"));
                 delay(random(500,1000));
@@ -271,6 +283,20 @@ void ChromeService::followByPage()
                  delay(10000);
              }
         }
+    }
+}
+
+bool ChromeService::checkProxy(QString ip, int port)
+{
+    CkHttp http;
+    http.put_ProxyDomain(ip.toUtf8().data());
+    http.put_ProxyPort(port);
+    const char * html = http.quickGetStr("https://www.google.com.vn/");
+    if(html) {
+        return html;
+    } else {
+        LOGD << "proxy died";
+        return false;
     }
 }
 

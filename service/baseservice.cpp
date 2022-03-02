@@ -154,7 +154,7 @@ bool BaseService::inputText(QString textInput, By by)
         auto parts = textInput.split(QString());
         Element element = driver->FindElement(by);
         for (int i = 1; i < parts.length(); i++) {
-            delay(random(200, 400));
+            delay(random(400, 500));
             element.SendKeys(parts[i].toStdString());
         }
         return true;
