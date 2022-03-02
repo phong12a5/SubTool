@@ -27,6 +27,7 @@ private:
 
 
     bool checkProxy(QString ip, int port);
+    bool getInviteLink(QString& data, QString uid);
 public slots:
     void onStarted() override;
     void onMainProcess() override;

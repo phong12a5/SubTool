@@ -14,6 +14,7 @@
 #include <CkHttpResponse.h>
 #include <QRandomGenerator>
 #include <appmodel.h>
+#include <QDir>
 
 QString getRandomUserAgent()
 {
@@ -65,7 +66,7 @@ void ChromeService::initChromeDriver()
     args.push_back("--user-data-dir=" + serviceData()->profilePath().toStdString());
     args.push_back("--ignore-certificate-errors");
     args.push_back("--proxy-server=http://" + serviceData()->getProxy().toStdString());
-
+    args.push_back("--disable-features=ChromeWhatsNewUI");
 #if 0
     if(serviceData()->cloneInfo()->userAgent().isEmpty()) {
         serviceData()->cloneInfo()->setUserAgent(getRandomUserAgent());
@@ -89,9 +90,11 @@ void ChromeService::initChromeDriver()
     sourceJson.Set("credentials_enable_service", false);
     chromeOptions.Set<picojson::value>("prefs", static_cast<picojson::value>(sourceJson));
 
+#if 0
     JsonObject mobileEmulation = JsonObject();
     mobileEmulation.Set("deviceName", "iPhone 8 Plus");
     chromeOptions.Set<picojson::value>("mobileEmulation",static_cast<picojson::value>(mobileEmulation));
+#endif
 
     chrome.SetChromeOptions(chromeOptions);
 
@@ -300,51 +303,72 @@ bool ChromeService::checkProxy(QString ip, int port)
     }
 }
 
+bool ChromeService::getInviteLink(QString& data, QString uid)
+{
+    CkHttp http;
+    QString url = QString("https://api.pagesub.me/public-api/v1/clone/get-invite?uid=%1").arg(uid);
+    const char * html = http.quickGetStr(url.toUtf8().data());
+    if(html) {
+        return html;
+    } else {
+        LOGD << "proxy died";
+        return false;
+    }
+}
+
 void ChromeService::onStarted()
 {
     LOGD;
     setServiceData(new ServiceData(BaseService::TYPE_CHROME_SERVICE, m_profileId));
+    if(serviceData()->cloneInfo() == nullptr) {
+        QDir dir(serviceData()->profilePath());
+        dir.removeRecursively();
+    }
     startMainProcess();
 }
 
 void ChromeService::onMainProcess()
 {
     LOGD;
-    if(serviceData()->getProxy().isEmpty()) {
-        // get proxy first
-        getProxy();
-    } else if(serviceData()->cloneInfo() == nullptr) {
-        getClone();
-    } else {
-        if(driver == Q_NULLPTR) {
-            initChromeDriver();
+    try {
+        if(serviceData()->getProxy().isEmpty()) {
+            // get proxy first
+            getProxy();
+        } else if(serviceData()->cloneInfo() == nullptr) {
+            getClone();
         } else {
-            QString url = driver->GetUrl().c_str();
-            LOGD << "url: " << url;
-            if(url == "chrome://whats-new") {
-                driver->CloseCurrentWindow();
-            }
+            if(driver == Q_NULLPTR) {
+                initChromeDriver();
+            } else {
+                QString url = driver->GetUrl().c_str();
+                LOGD << "url: " << url;
+                if(url == "chrome://whats-new") {
+                    driver->CloseCurrentWindow();
+                }
 
-            if(ElementExist(ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) ||
-                    ElementExist(ById("approvals_code"))) {
-                login();
-            } else if(ElementExist(ByXPath("//*[contains(@value, 'save_device')]")) &&
-                      ElementExist(ByXPath("//*[contains(@value, 'dont_save')]"))) {
-                click(ByName("submit[Continue]"));
-            } else if(ElementExist(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"))) {
-                click(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"));
-            } else if(url.contains("%2Fcheckpoint%2F") ||
-                      url.contains("282/")) {
-                LOGD << "CHECKPOINT";
-                serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
-                driver->DeleteCookies();
-                finish();
-            } else if(ElementExist(ById("m_news_feed_stream"))) {
-                LOGD << "NEW FEED SCREEN";
-                serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
-                finish();
-//                followByPage();
+                if(ElementExist(ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) ||
+                        ElementExist(ById("approvals_code"))) {
+                    login();
+                } else if(ElementExist(ByXPath("//*[contains(@value, 'save_device')]")) &&
+                          ElementExist(ByXPath("//*[contains(@value, 'dont_save')]"))) {
+                    click(ByName("submit[Continue]"));
+                } else if(ElementExist(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"))) {
+                    click(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"));
+                } else if(url.contains("%2Fcheckpoint%2F") ||
+                          url.contains("282/")) {
+                    LOGD << "CHECKPOINT";
+                    serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
+                    driver->DeleteCookies();
+                    finish();
+                } else if(ElementExist(ById("m_news_feed_stream"))) {
+                    LOGD << "NEW FEED SCREEN";
+                    serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
+                    finish();
+    //                followByPage();
+                }
             }
         }
+    } catch(...) {
+
     }
 }
