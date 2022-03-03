@@ -31,7 +31,9 @@ private:
 
 
     bool checkProxy(QString ip, int port);
-    bool getInviteLink(QString& data, QString uid);
+    bool getInviteLink(QJsonObject& data, QString uid);
+    bool acceptInvitation(QJsonObject& data);
+    bool submitAcceptedInvitation(QJsonObject link);
 public slots:
     void onStarted() override;
     void onMainProcess() override;

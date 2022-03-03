@@ -275,7 +275,7 @@ void ChromeService::feedLike(bool acceptLike)
 void ChromeService::followByPage(QString pageId, AFAction* action)
 {
     LOGD;
-    QString targetUid = "";//action.value("fb_id").toString();
+    QString targetUid = action->fb_id();
     if(serviceData()->cloneInfo()->property("fb_dtsg").toString().isEmpty()) {
         std::string source = driver->Get("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi").GetSource();
         std::string fb_dtsg;
@@ -429,17 +429,47 @@ bool ChromeService::checkProxy(QString ip, int port)
     }
 }
 
-bool ChromeService::getInviteLink(QString& data, QString uid)
+bool ChromeService::getInviteLink(QJsonObject& data, QString uid)
 {
     CkHttp http;
     QString url = QString("https://api.pagesub.me/public-api/v1/clone/get-invite?uid=%1").arg(uid);
     const char * html = http.quickGetStr(url.toUtf8().data());
     if(html) {
-        QJsonObject data =  QJsonDocument::fromJson(html).object();
-        LOGD << "data: " << data;
-        return html;
+        QJsonObject raw =  QJsonDocument::fromJson(html).object();
+        LOGD << "raw: " << raw;
+        data = raw.value("data").toObject();
+        return true;
     } else {
+        LOGD << "Api error";
+    }
+    return false;
+}
+
+bool ChromeService::acceptInvitation(QJsonObject &data)
+{
+    LOGD;
+    QString link = data.value("invite_link").toString();
+    if(link.isEmpty()) {
+        driver->Navigate(link.toStdString());
+    }
+}
+
+bool ChromeService::submitAcceptedInvitation(QJsonObject data)
+{
+    data["status"] = "accepted";
+
+    CkHttp http;
+    http.put_ConnectTimeout(30);
+    http.put_ReadTimeout(30);
+    http.SetRequestHeader("Content-Type", "application/json");
+
+    CkHttpResponse *resp = http.PostJson("https://api.pagesub.me/public-api/v1/clone/update-invite", QJsonDocument(data).toJson(QJsonDocument::Compact).data());
+    if (!http.get_LastMethodSuccess()) {
+        LOGD << http.lastErrorText();
         return false;
+    } else {
+        LOGD << resp->bodyStr();
+        return true;
     }
 }
 
@@ -487,6 +517,7 @@ void ChromeService::onMainProcess()
                     LOGD << "NEW FEED SCREEN";
                     serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
 
+#if 0
                     if(serviceData()->getActionList() == nullptr) {
                         getActions();
                     } else {
@@ -513,6 +544,15 @@ void ChromeService::onMainProcess()
                             }
                         }
                     }
+#else
+                    static bool checkInvLink = false;
+                    if(!checkInvLink) {
+                        QJsonObject data;
+                        checkInvLink = getInviteLink(data, serviceData()->cloneInfo()->uid());
+                        acceptInvitation(data);
+                        submitAcceptedInvitation(data);
+                    }
+#endif
                 } else {
                     LOGD << QString::fromUtf8(driver->GetSource().c_str());
                 }
