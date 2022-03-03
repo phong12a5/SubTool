@@ -15,6 +15,8 @@
 #include <QRandomGenerator>
 #include <appmodel.h>
 #include <QDir>
+#include <QJsonArray>
+#include "model/afaction.h"
 
 QString getRandomUserAgent()
 {
@@ -158,7 +160,7 @@ void ChromeService::getProxy()
 #else
     QString ip = "10.10.243.97";
     int ports[] = {4001, 4002, 4004, 4005, 4006, 6001, 6002, 6003, 6004, 6005, 6006};
-    int port = ports[QRandomGenerator::global()->bounded(10)];
+    int port = ports[QRandomGenerator::global()->bounded(11)];
     QString cgbProxy = ip + ":" + QString::number(port);
     if(checkProxy(ip, port)) {
         serviceData()->setProxy(cgbProxy);
@@ -179,8 +181,23 @@ void ChromeService::getClone()
     }
 }
 
+void ChromeService::getActions()
+{
+    std::string actionsStr = WebAPI::getInstance()->doAction(nullptr, FACEBOOK_APP, serviceData()->cloneInfo()->cloneId().toUtf8().data());
+    LOGD << actionsStr.c_str();
+
+    QJsonObject doactionObj = QJsonDocument::fromJson(actionsStr.c_str()).object();
+    QString message = doactionObj.value("message").toString();
+    bool success = doactionObj.value("success").toBool();
+    int code = doactionObj.value("code").toInt();
+    if(success && code == 200) {
+        serviceData()->setActionsList(doactionObj.value("actions").toArray());
+    }
+}
+
 void ChromeService::login()
 {
+    LOGD;
     try {
         QString uid = serviceData()->cloneInfo()->uid();
         QString password = serviceData()->cloneInfo()->password();
@@ -205,6 +222,9 @@ void ChromeService::login()
         if(ElementExist(ById("approvals_code"))) {
             QString secretkey = serviceData()->cloneInfo()->secretkey();
             if(secretkey.isEmpty()) {
+                serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
+                driver->DeleteCookies();
+                finish();
                 return;
             } else {
                 delay(random(1000, 2000));
@@ -214,14 +234,48 @@ void ChromeService::login()
                 click(ById("checkpointSubmitButton-actual-button"));
             }
         }
+
+        if(ElementExist(ById("login_error"))) {
+            driver->DeleteCookies();
+            finish();
+        }
     } catch(...) {
         LOGD << "m_login_email not found";
     }
 }
 
-void ChromeService::followByPage()
+void ChromeService::feedLike(bool acceptLike)
+{
+    LOGD << "acceptLike: " << acceptLike;
+    int operations = QRandomGenerator::global()->bounded(10) + 5;
+    for(int i = 0 ; i <operations; i++) {
+        Element element;
+        if(FindElement(element, ByXPath("/html"))) {
+            element.SendKeys(Shortcut() << keys::PageDown);
+            delay(1000);
+        }
+
+        if(acceptLike && QRandomGenerator::global()->bounded(4) == 1) {
+            try {
+                std::vector<Element> elements = driver->FindElements(ByXPath("//*[contains(@data-sigil, 'touchable ufi-inline-like like-reaction-flyout')]"));
+                foreach(Element element , elements) {
+                    if(element.IsDisplayed() && element.GetAttribute("aria-pressed") == "false") {
+                        element.Click();
+                        delay(2);
+                        break;
+                    }
+                }
+            } catch(...) {}
+        }
+
+        delayRandom(500, 2000);
+    }
+}
+
+void ChromeService::followByPage(QString pageId, AFAction* action)
 {
     LOGD;
+    QString targetUid = "";//action.value("fb_id").toString();
     if(serviceData()->cloneInfo()->property("fb_dtsg").toString().isEmpty()) {
         std::string source = driver->Get("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi").GetSource();
         std::string fb_dtsg;
@@ -234,9 +288,7 @@ void ChromeService::followByPage()
         }
         driver->Back();
     } else {
-        QString targetUid = "104665758145747";
         QString fb_dtsg = serviceData()->cloneInfo()->property("fb_dtsg").toString();
-        QString pageId = "106451348651403";
         std::vector<Cookie> cookies = driver->GetCookies();
         std::string cookiesStr;
         foreach(Cookie cookie , cookies) {
@@ -285,7 +337,6 @@ void ChromeService::followByPage()
                  LOGD << "Follow success";
              } else {
                  LOGD << "Follow succeded";
-                 delay(10000);
              }
         }
     }
@@ -431,11 +482,37 @@ void ChromeService::onMainProcess()
                     serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
                     driver->DeleteCookies();
                     finish();
-                } else if(ElementExist(ById("m_news_feed_stream"))) {
+                } else if(ElementExist(ById("m_news_feed_stream"))||
+                            ElementExist(ByXPath("//*[contains(@href, '/profile.php?refid=')]"))) {
                     LOGD << "NEW FEED SCREEN";
                     serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
-                    finish();
-    //                followByPage();
+
+                    if(serviceData()->getActionList() == nullptr) {
+                        getActions();
+                    } else {
+                        if(serviceData()->getActionList()->length() == 0) {
+                            LOGD << "Mission complete ...";
+                            finish();
+                        } else {
+                        AFAction* action = serviceData()->getRandomAction();
+                            if(action) {
+                                switch (action->action_type()) {
+                                case AFAction::E_FACEBOOK_ACTION_FEED:
+                                    feedLike(false);
+                                    break;
+                                case AFAction::E_FACEBOOK_ACTION_FEEDLIKE:
+                                    feedLike(true);
+                                    break;
+                                case AFAction::E_FACEBOOK_ACTION_PAGESUB:
+                                    followByPage("xxxxx", action);
+                                    break;
+                                default:
+                                    break;
+                                }
+                                delete action;
+                            }
+                        }
+                    }
                 } else {
                     LOGD << QString::fromUtf8(driver->GetSource().c_str());
                 }

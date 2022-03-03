@@ -12,12 +12,15 @@
 #include "log.h"
 #include <QSettings>
 #include <WebAPI.hpp>
+#include "afaction.h"
+#include <QRandomGenerator>
 
 ServiceData::ServiceData(BaseService::SERVICE_TYPE type, int profileId, QObject *parent) :
     QObject(parent),
     m_type(type),
     m_profileId(profileId),
-    m_cloneInfo(nullptr)
+    m_cloneInfo(nullptr),
+    m_actions(nullptr)
 {
     QSettings settings;
     switch (m_type) {
@@ -39,12 +42,16 @@ ServiceData::ServiceData(BaseService::SERVICE_TYPE type, int profileId, QObject 
 
 ServiceData::~ServiceData()
 {
-    LOGD;
     if(m_cloneInfo) {
         delete m_cloneInfo;
         m_cloneInfo = nullptr;
     }
-    LOGD << "done";
+
+    if(m_actions) {
+        m_actions->clear();
+        delete m_actions;
+        m_actions = nullptr;
+    }
 }
 
 CloneInfo *ServiceData::cloneInfo()
@@ -65,6 +72,53 @@ void ServiceData::setCloneInfo(CloneInfo *cloneInfo)
         // random userAgent
         if(m_cloneInfo) {
             connect(m_cloneInfo, &CloneInfo::cloneInfoChanged, this, &ServiceData::onCloneInfoChanged );
+        }
+    }
+}
+
+AFAction* ServiceData::getRandomAction()
+{
+    if(m_actions || !m_actions->empty()) {
+       return m_actions->takeAt(QRandomGenerator::global()->bounded(m_actions->size()));
+    } else {
+        return nullptr;
+    }
+}
+
+QList<AFAction*> *ServiceData::getActionList()
+{
+    return m_actions;
+}
+
+void ServiceData::setActionsList(QJsonArray array)
+{
+    LOGD;
+    if(m_actions == nullptr) {
+        m_actions = new QList<AFAction*>();
+    } else {
+        m_actions->clear();
+    }
+
+    for(int i = 0; i < array.size(); i++) {
+        AFAction* action = new AFAction(array.at(i).toObject(), this);
+        if(action) {
+            switch (action->action_type()) {
+                case AFAction::E_FACEBOOK_ACTION_FEED:
+                case AFAction::E_FACEBOOK_ACTION_FEEDLIKE:
+                m_actions->append(action);
+                break;
+            case AFAction::E_FACEBOOK_ACTION_PAGESUB:
+                if(!action->fb_id().isEmpty()) {
+                    m_actions->append(action);
+                }else {
+                    delete action;
+                }
+            default:
+                delete action;
+                break;
+            }
+        } else {
+            delete action;
         }
     }
 }
@@ -95,13 +149,14 @@ void ServiceData::onCloneInfoChanged(QString action)
 
     QSettings settings;
     if(m_cloneInfo && m_cloneInfo->aliveStatus() == CLONE_ALIVE_STATUS_STORE) {
+        LOGD << "Save clone info: " << m_cloneInfo->toJson();
         settings.setValue(cloneInfokey(), m_cloneInfo->toJson());
     } else {
         settings.setValue(cloneInfokey(), QJsonObject());
+        LOGD << "Save clone info: " <<  QJsonObject();
         if(m_cloneInfo && m_cloneInfo->aliveStatus() == CLONE_ALIVE_STATUS_CHECKPOINT) {
             delete m_cloneInfo;
             m_cloneInfo = nullptr;
         }
     }
-    LOGD << "done";
 }

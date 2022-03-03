@@ -6,6 +6,7 @@
 //#include "worker/chromeworker.h"
 
 class ServiceData;
+class AFAction;
 
 class ChromeService : public BaseService
 {
@@ -21,9 +22,11 @@ private:
     void initChromeDriver();
     void getProxy();
     void getClone();
+    void getActions();
 
     void login();
-    void followByPage();
+    void feedLike(bool acceptLike);
+    void followByPage(QString pageId, AFAction* action);
     bool getPagesOfUid();
 
 

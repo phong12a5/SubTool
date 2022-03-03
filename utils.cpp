@@ -75,3 +75,8 @@ int random(int min, int max)
     int randomValue = qrand() % max + min;
     return randomValue;
 }
+
+void delayRandom(int minMilSec, int maxMilSec)
+{
+    delay(random(minMilSec, maxMilSec));
+}

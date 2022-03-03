@@ -23,6 +23,7 @@ SOURCES += \
         log.cpp \
         main.cpp \
         appmain.cpp \
+    model/afaction.cpp \
         model/cloneinfo.cpp \
         model/servicedata.cpp \
         service/baseservice.cpp \
@@ -39,6 +40,7 @@ HEADERS += \
     appmain.h \
     appmodel.h \
     log.h \
+    model/afaction.h \
     model/cloneinfo.h \
     model/servicedata.h \
     service/baseservice.h \

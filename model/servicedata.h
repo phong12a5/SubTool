@@ -5,6 +5,8 @@
 #include "cloneinfo.h"
 #include "log.h"
 #include "fdriver/include/util/futil.h"
+#include <array>
+#include <array>
 #include <windows.h>
 #include "AppEnum.h"
 #include "cloneinfo.h"
@@ -12,6 +14,9 @@
 #include <AppDefine.h>
 #include <QSize>
 #include <QPoint>
+#include <QJsonArray>
+
+class AFAction;
 
 class ServiceData : public QObject
 {
@@ -88,6 +93,11 @@ public:
     PROXY_KIND getProxyKind() const{
         return m_proxyKind;
     }
+
+    int actionsSize();
+    AFAction* getRandomAction();
+    QList<AFAction*>* getActionList();
+    void setActionsList(QJsonArray array);
 private:
     void loadCloneInfo();
 
@@ -112,6 +122,7 @@ private:
     QString m_linkProfile;
     QPoint m_posstion;
     QSize m_windowSize;
+    QList<AFAction*>* m_actions;
 };
 
 #endif // SERVICEDATA_H

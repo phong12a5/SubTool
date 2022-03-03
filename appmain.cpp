@@ -71,7 +71,6 @@ void AppMain::setWindowProp(ServiceData* model, int index)
 
 void AppMain::onCheckPrecondition()
 {
-    LOGD;
     if(!APIServices::instance()->isFdriverReady()) {
         LOGD << "Fdriver is not ready";
     } else if(!APIServices::instance()->isAFAPIReady()) {
@@ -95,7 +94,6 @@ void AppMain::onCheckPrecondition()
 
 void AppMain::onServiceUpdated()
 {
-    LOGD;
     if(AppModel::instance()->appStarted()) {
         if(ServiceManager::instance()->countService() < AppModel::instance()->maxThread() && \
                 ServiceManager::instance()->countService() < MAX_PROFILE_NUMBER) {

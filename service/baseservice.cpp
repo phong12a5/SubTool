@@ -182,6 +182,7 @@ bool BaseService::ElementExist(const fdriver::By &by)
         driver->FindElement(by);
         return true;
     } catch(...) {
+        LOGD << by.GetStrategy().c_str() << ":" << by.GetValue().c_str() << " not found";
         return false;
     }
 }

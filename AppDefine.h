@@ -22,4 +22,6 @@
 
 #define CLONE_INFO_FILED "data/%1/clone_info/%2"
 
+#define FACEBOOK_APP "facebook"
+
 #endif // APPDEFINE_H

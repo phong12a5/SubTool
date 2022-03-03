@@ -25,6 +25,8 @@ bool ping(QString host);
 
 void delay(int milsec);
 
+void delayRandom(int minMilSec, int maxMilSec);
+
 int random(int min, int max);
 
 #endif // UTILS_H
