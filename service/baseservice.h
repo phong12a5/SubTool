@@ -57,6 +57,7 @@ public slots:
 protected:
     virtual void connectSignalSlots() = 0;
     void setCookies(QString cookies);
+    QString getCookies(bool* ok = nullptr);
     bool inputText(QString textInput, By by);
     bool click(By by);
     bool ElementExist(const fdriver::By &by);

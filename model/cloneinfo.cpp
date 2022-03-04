@@ -79,6 +79,18 @@ void CloneInfo::setUserAgent(QString userAgent)
     }
 }
 
+QStringList CloneInfo::pageList()
+{
+    return m_pageList;
+}
+
+void CloneInfo::setPageList(QStringList pages)
+{
+    if(m_pageList != pages) {
+        m_pageList = pages;
+    }
+}
+
 QJsonObject CloneInfo::toJson()
 {
     return m_cloneInfo;

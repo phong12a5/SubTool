@@ -80,6 +80,9 @@ public:
 //    void setProxy(QString proxy);
 //    QString getProxy();
 
+    QStringList pageList();
+    void setPageList(QStringList page);
+
     QJsonObject toJson();
     QString toString();
 
@@ -88,6 +91,7 @@ signals:
 
 private:
     QJsonObject m_cloneInfo;
+    QStringList m_pageList;
 };
 
 #endif // COMMONINFORCLONE_H

@@ -148,6 +148,24 @@ void BaseService::setCookies(QString cookies)
 
 }
 
+QString BaseService::getCookies(bool* ok)
+{
+    try {
+        std::vector<Cookie> cookies = driver->GetCookies();
+        std::string cookiesStr;
+        foreach(Cookie cookie , cookies) {
+            std::string cookieStr;
+            cookieStr += cookie.name + "=" + cookie.value + ";";
+            cookiesStr += cookieStr;
+        }
+        if(ok) *ok = true;
+        return QString(cookiesStr.c_str());
+    } catch(...) {
+        if(ok) *ok = false;
+        return QString();
+    }
+}
+
 bool BaseService::inputText(QString textInput, By by)
 {
     try {

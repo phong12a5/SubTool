@@ -28,6 +28,7 @@ private:
     void feedLike(bool acceptLike);
     void followByPage(QString pageId, AFAction* action);
     bool getPagesOfUid();
+    bool getFb_dtsg();
 
 
     bool checkProxy(QString ip, int port);
@@ -39,7 +40,9 @@ public slots:
     void onMainProcess() override;
 
 private:
-    QThread m_;
+    bool m_checkInvLink;
+    bool m_getPageList;
+    QString m_fb_dtsg;
 };
 
 #endif // CHROMESERVICE_H

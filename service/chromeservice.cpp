@@ -40,6 +40,8 @@ QString getRandomUserAgent()
 ChromeService::ChromeService(int profileId, QObject *parent) :
     BaseService(SERVICE_TYPE::TYPE_CHROME_SERVICE,profileId, parent)
 {
+    m_checkInvLink = false;
+    m_getPageList = false;
     LOGD << "--------- ChromeService: " << profileId << " ---------";
 }
 
@@ -276,76 +278,109 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
 {
     LOGD;
     QString targetUid = action->fb_id();
-    if(serviceData()->cloneInfo()->property("fb_dtsg").toString().isEmpty()) {
-        std::string source = driver->Get("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi").GetSource();
-        std::string fb_dtsg;
-        std::string regx = R"(name=\\\"fb_dtsg\\\" value=\\\"([\s\S]*?)\\\")";
-        std::smatch matches;
-        if (std::regex_search(source, matches, std::regex(regx)))
-        {
-            fb_dtsg = matches[1];
-            serviceData()->cloneInfo()->setProperty("fb_dtsg", QVariant(fb_dtsg.c_str()));
-        }
-        driver->Back();
+    QString fb_dtsg = m_fb_dtsg;
+    QString cookies = getCookies();
+    LOGD << "cookies: " << cookies;
+
+
+    CkHttp http;
+    CkHttpRequest req;
+    req.put_HttpVerb("POST");
+    req.put_Path("/api/graphql");
+    req.put_ContentType("multipart/form-data;charset=utf-8");
+
+    req.AddHeader("authority", "www.facebook.com");
+    req.AddHeader("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"");
+    req.AddHeader("accept", "application/json, text/plain, */*");
+    req.AddHeader("sec-ch-ua-mobile", "?0");
+    req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36");
+    req.AddHeader("sec-ch-ua-platform", "\"Windows\"");
+    req.AddHeader("origin", "https://www.facebook.com");
+    req.AddHeader("sec-fetch-site", "none");
+    req.AddHeader("sec-fetch-mode", "navigate");
+    req.AddHeader("sec-fetch-dest", "document");
+    req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
+    req.AddHeader("cookie", cookies.toUtf8().data());
+
+    req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361,431626192\"]");
+    req.AddParam("doc_id", "4451435638222552");
+    req.AddParam("fb_api_req_friendly_name", "CometUserFollowMutation");
+    req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
+
+    QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"16\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
+    req.AddParam("variables", variable.toUtf8().data());
+
+    CkHttpResponse *resp = http.PostUrlEncoded("https://www.facebook.com/api/graphql",req);
+    if (http.get_LastMethodSuccess() == false) {
+        LOGD << "error: " << http.lastErrorText();
+        return;
     } else {
-        QString fb_dtsg = serviceData()->cloneInfo()->property("fb_dtsg").toString();
-        std::vector<Cookie> cookies = driver->GetCookies();
-        std::string cookiesStr;
-        foreach(Cookie cookie , cookies) {
-            std::string cookieStr;
-            cookieStr += cookie.name + "=" + cookie.value + ";";
-            cookiesStr += cookieStr;
-        }
-        LOGD << "cookieStr: " << cookiesStr.c_str();
-
-
-        CkHttp http;
-        CkHttpRequest req;
-        req.put_HttpVerb("POST");
-        req.put_Path("/api/graphql");
-        req.put_ContentType("multipart/form-data;charset=utf-8");
-
-        req.AddHeader("authority", "www.facebook.com");
-        req.AddHeader("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"");
-        req.AddHeader("accept", "application/json, text/plain, */*");
-        req.AddHeader("sec-ch-ua-mobile", "?0");
-        req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36");
-        req.AddHeader("sec-ch-ua-platform", "\"Windows\"");
-        req.AddHeader("origin", "https://www.facebook.com");
-        req.AddHeader("sec-fetch-site", "none");
-        req.AddHeader("sec-fetch-mode", "navigate");
-        req.AddHeader("sec-fetch-dest", "document");
-        req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
-        req.AddHeader("cookie", cookiesStr.c_str());
-
-        req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361,431626192\"]");
-        req.AddParam("doc_id", "4451435638222552");
-        req.AddParam("fb_api_req_friendly_name", "CometUserFollowMutation");
-        req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
-
-        QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"16\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
-        req.AddParam("variables", variable.toUtf8().data());
-
-        CkHttpResponse *resp = http.PostUrlEncoded("https://www.facebook.com/api/graphql",req);
-        if (http.get_LastMethodSuccess() == false) {
-            LOGD << "error: " << http.lastErrorText();
-            return;
-        } else {
-             QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
-             LOGD << "body: " << resp->bodyStr();
-             if(!respObj.isEmpty() && !respObj.contains("error") && !respObj.value("actor_subscribe").toObject().isEmpty()) {
-                 LOGD << "Follow success";
-             } else {
-                 LOGD << "Follow succeded";
-             }
-        }
+         QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
+         LOGD << "body: " << resp->bodyStr();
+         if(!respObj.isEmpty() && !respObj.contains("error") && !respObj.value("actor_subscribe").toObject().isEmpty()) {
+             LOGD << "Follow success";
+         } else {
+             LOGD << "Follow succeded";
+         }
     }
 }
 
 bool ChromeService::getPagesOfUid()
 {
     LOGD;
-    if(serviceData()->cloneInfo()->property("fb_dtsg").toString().isEmpty()) {
+    QString fb_dtsg = m_fb_dtsg;
+    QString cookies = getCookies();
+
+    CkHttp http;
+    CkHttpRequest req;
+    req.put_HttpVerb("POST");
+    req.put_Path("/api/graphql");
+    req.put_ContentType("multipart/form-data;charset=utf-8");
+
+    req.AddHeader("authority", "www.facebook.com");
+    req.AddHeader("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"");
+    req.AddHeader("accept", "application/json, text/plain, */*");
+    req.AddHeader("sec-ch-ua-mobile", "?0");
+    req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36");
+    req.AddHeader("sec-ch-ua-platform", "\"Windows\"");
+    req.AddHeader("origin", "https://www.facebook.com");
+    req.AddHeader("sec-fetch-site", "none");
+    req.AddHeader("sec-fetch-mode", "navigate");
+    req.AddHeader("sec-fetch-dest", "document");
+    req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
+    req.AddHeader("cookie", cookies.toUtf8().data());
+
+    req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
+    req.AddParam("fb_api_caller_class", "RelayModern");
+    req.AddParam("fb_api_req_friendly_name", "PageCometLaunchpointPagesListQuery");
+    req.AddParam("variables", "{\"scale\":1.5}");
+    req.AddParam("doc_id", "4700711393323643");
+
+
+    CkHttpResponse *resp = http.PostUrlEncoded("https://www.facebook.com/api/graphql",req);
+    if (http.get_LastMethodSuccess() == false) {
+        LOGD << "error: " << http.lastErrorText();
+    } else {
+        QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
+        QJsonArray pages = respObj.value("data").toObject().value("viewer").toObject().value("admined_pages").toObject().value("nodes").toArray();
+
+        LOGD << "pages: " << pages;
+        QStringList pageList;
+        for(int i = 0 ; i < pages.size(); i++) {
+            QJsonObject obj = pages.at(i).toObject();
+            if(!obj.value("id").toString().isEmpty())
+                pageList.append(obj.value("id").toString());
+        }
+        serviceData()->cloneInfo()->setPageList(pageList);
+        return true;
+    }
+    return false;
+}
+
+bool ChromeService::getFb_dtsg()
+{
+    LOGD;
+    try {
         std::string source = driver->Get("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi").GetSource();
         std::string fb_dtsg;
         std::string regx = R"(name=\\\"fb_dtsg\\\" value=\\\"([\s\S]*?)\\\")";
@@ -353,65 +388,17 @@ bool ChromeService::getPagesOfUid()
         if (std::regex_search(source, matches, std::regex(regx)))
         {
             fb_dtsg = matches[1];
-            serviceData()->cloneInfo()->setProperty("fb_dtsg", QVariant(fb_dtsg.c_str()));
+            m_fb_dtsg = fb_dtsg.c_str();
         }
         driver->Back();
-    } else {
-        QString targetUid = "104665758145747";
-        QString fb_dtsg = serviceData()->cloneInfo()->property("fb_dtsg").toString();
-        QString pageId = "106451348651403";
-        std::vector<Cookie> cookies = driver->GetCookies();
-        std::string cookiesStr;
-        foreach(Cookie cookie , cookies) {
-            std::string cookieStr;
-            cookieStr += cookie.name + "=" + cookie.value + ";";
-            cookiesStr += cookieStr;
+
+        if(!fb_dtsg.empty()) {
+            return true;
         }
-        LOGD << "cookieStr: " << cookiesStr.c_str();
+    } catch(...) {
 
-
-        CkHttp http;
-        CkHttpRequest req;
-        req.put_HttpVerb("POST");
-        req.put_Path("/api/graphql");
-        req.put_ContentType("multipart/form-data;charset=utf-8");
-
-        req.AddHeader("authority", "www.facebook.com");
-        req.AddHeader("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"");
-        req.AddHeader("accept", "application/json, text/plain, */*");
-        req.AddHeader("sec-ch-ua-mobile", "?0");
-        req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36");
-        req.AddHeader("sec-ch-ua-platform", "\"Windows\"");
-        req.AddHeader("origin", "https://www.facebook.com");
-        req.AddHeader("sec-fetch-site", "none");
-        req.AddHeader("sec-fetch-mode", "navigate");
-        req.AddHeader("sec-fetch-dest", "document");
-        req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
-        req.AddHeader("cookie", cookiesStr.c_str());
-
-        req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361,431626192\"]");
-        req.AddParam("doc_id", "4451435638222552");
-        req.AddParam("fb_api_req_friendly_name", "CometUserFollowMutation");
-        req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
-
-        QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"16\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
-        req.AddParam("variables", variable.toUtf8().data());
-
-        CkHttpResponse *resp = http.PostUrlEncoded("https://www.facebook.com/api/graphql",req);
-        if (http.get_LastMethodSuccess() == false) {
-            LOGD << "error: " << http.lastErrorText();
-        } else {
-             QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
-             LOGD << "body: " << resp->bodyStr();
-             if(!respObj.isEmpty() && !respObj.contains("error") && !respObj.value("actor_subscribe").toObject().isEmpty()) {
-                 LOGD << "Follow success";
-                 return true;
-             } else {
-                 LOGD << "Follow succeded";
-                 delay(10000);
-             }
-        }
     }
+
     return false;
 }
 
@@ -449,9 +436,75 @@ bool ChromeService::acceptInvitation(QJsonObject &data)
 {
     LOGD;
     QString link = data.value("invite_link").toString();
-    if(link.isEmpty()) {
-        driver->Navigate(link.toStdString());
+    if(!link.isEmpty()) {
+        try {
+            driver->Navigate(link.toStdString());
+            QString url = driver->GetUrl().c_str();
+            QString first_name = "Clone";
+            QString last_name = serviceData()->cloneInfo()->uid();
+            QString invitation_token = url.mid(url.indexOf("?token=") + 7);
+            QString UID = serviceData()->cloneInfo()->uid();
+            QString PASSWORD = serviceData()->cloneInfo()->password();
+            QString fb_dtsg = m_fb_dtsg;
+            QString COOKIE = getCookies();
+
+            LOGD << "first_name: " << first_name << "\n" \
+                    << "last_name: " << last_name << "\n" \
+                    << "invitation_token: " << invitation_token << "\n" \
+                    << "UID: " << UID << "\n" \
+                    << "PASSWORD: " << PASSWORD << "\n" \
+                    << "fb_dtsg: " << fb_dtsg << "\n" \
+                    << "COOKIE: " << COOKIE << "\n";
+            CkHttp http;
+            CkHttpRequest req;
+
+            req.put_HttpVerb("POST");
+            req.put_ContentType("multipart/form-data;charset=utf-8");
+
+            req.AddParam("first_name", first_name.toUtf8().data());
+            req.AddParam("last_name", last_name.toUtf8().data());
+            req.AddParam("invitation_token", invitation_token.toUtf8().data());
+            req.AddParam("__user", UID.toUtf8().data());
+            req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
+            req.AddParam("ajax_password", PASSWORD.toUtf8().data());
+            req.AddParam("confirmed", "1");
+            req.AddParam("jazoest", "21986");
+            req.AddParam("lsd", "D_YX-qPTxm83MziqgRce71");
+            req.AddParam("__spin_r", "1005145724");
+            req.AddParam("__spin_b", "trunk");
+            req.AddParam("__spin_t", "1646372818");
+            req.AddParam("__jssesw", "1");
+
+            req.AddHeader("authority", "www.facebook.com");
+            req.AddHeader("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"");
+            req.AddHeader("accept", "application/json, text/plain, */*");
+            req.AddHeader("sec-ch-ua-mobile", "?0");
+            req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36");
+            req.AddHeader("sec-ch-ua-platform", "\"Windows\"");
+            req.AddHeader("origin", "https://www.facebook.com");
+            req.AddHeader("sec-fetch-site", "none");
+            req.AddHeader("sec-fetch-mode", "navigate");
+            req.AddHeader("sec-fetch-dest", "document");
+            req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
+            req.AddHeader("Cookie", COOKIE.toUtf8().data());
+
+            CkHttpResponse *resp = http.PostUrlEncoded("https://business.facebook.com/business/invitation/login/",req);
+            if (http.get_LastMethodSuccess() == false) {
+
+            } else {
+                if(QString(resp->bodyStr()).isEmpty()) {
+                    driver->Back();
+                    return true;
+                }
+            }
+            driver->Back();
+        } catch(...) {
+
+        }
+    } else {
+        LOGD << "No invite link";
     }
+    return false;
 }
 
 bool ChromeService::submitAcceptedInvitation(QJsonObject data)
@@ -468,8 +521,8 @@ bool ChromeService::submitAcceptedInvitation(QJsonObject data)
         LOGD << http.lastErrorText();
         return false;
     } else {
-        LOGD << resp->bodyStr();
-        return true;
+        QJsonObject data = QJsonDocument::fromJson(resp->bodyStr()).object();
+        return data.value("data").toBool(false);
     }
 }
 
@@ -545,16 +598,39 @@ void ChromeService::onMainProcess()
                         }
                     }
 #else
-                    static bool checkInvLink = false;
-                    if(!checkInvLink) {
-                        QJsonObject data;
-                        checkInvLink = getInviteLink(data, serviceData()->cloneInfo()->uid());
-                        acceptInvitation(data);
-                        submitAcceptedInvitation(data);
+
+                    LOGD << "m_checkInvLink: " << m_checkInvLink;
+                    LOGD << "m_getPageList: " << m_getPageList;
+                    if(!m_checkInvLink) {
+                        if(m_fb_dtsg.isEmpty()) {
+                            getFb_dtsg();
+                            delayRandom(1000, 2000);
+                        } else {
+                            QJsonObject data;
+                            m_checkInvLink = getInviteLink(data, serviceData()->cloneInfo()->uid());
+                            if(data.contains("invite_link")) {
+                                if(acceptInvitation(data)) {
+                                    delayRandom(2000, 4000);
+                                    submitAcceptedInvitation(data);
+                                }
+                                delayRandom(2000, 4000);
+                            }
+                        }
+                    }  else if(!m_getPageList){
+                        // get pages
+                        getPagesOfUid();
+                        m_getPageList = true;
+                        delayRandom(2000, 4000);
+                    } else {
+                        LOGD << "page list: " << serviceData()->cloneInfo()->pageList();
+                        for(int i = 0; i < serviceData()->cloneInfo()->pageList().size(); i++) {
+                            LOGD << "follow by page: " << serviceData()->cloneInfo()->pageList().at(i);
+//                            followByPage(serviceData()->cloneInfo()->pageList().at(i));
+                            delayRandom(4000, 7000);
+                        }
+                        finish();
                     }
 #endif
-                } else {
-                    LOGD << QString::fromUtf8(driver->GetSource().c_str());
                 }
             }
         }
