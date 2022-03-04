@@ -71,7 +71,7 @@ public:
 //    void setCookies(QString cookies);
     QString cookies();
 
-    void setAliveStatus(QString status);
+    void setAliveStatus(QString status, bool forceSync = false);
     QString aliveStatus();
 
     QString userAgent();

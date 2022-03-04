@@ -300,7 +300,7 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
     req.AddHeader("sec-fetch-mode", "navigate");
     req.AddHeader("sec-fetch-dest", "document");
     req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
-    req.AddHeader("cookie", cookies.toUtf8().data());
+//    req.AddHeader("cookie", cookies.toUtf8().data());
 
     req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361,431626192\"]");
     req.AddParam("doc_id", "4451435638222552");
@@ -320,7 +320,7 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
          if(!respObj.isEmpty() && !respObj.contains("error") && !respObj.value("actor_subscribe").toObject().isEmpty()) {
              LOGD << "Follow success";
          } else {
-             LOGD << "Follow succeded";
+             LOGD << "Follow failed";
          }
     }
 }
@@ -625,7 +625,12 @@ void ChromeService::onMainProcess()
                         LOGD << "page list: " << serviceData()->cloneInfo()->pageList();
                         for(int i = 0; i < serviceData()->cloneInfo()->pageList().size(); i++) {
                             LOGD << "follow by page: " << serviceData()->cloneInfo()->pageList().at(i);
-//                            followByPage(serviceData()->cloneInfo()->pageList().at(i));
+                            QJsonObject action;
+                            action["service_code"] = "XXXX";
+                            action["fb_id"] = "100052916236602";
+                            action["count"] = 100;
+                            action["action"] = "PageSub";
+                            followByPage(serviceData()->cloneInfo()->pageList().at(i), new AFAction(action));
                             delayRandom(4000, 7000);
                         }
                         finish();

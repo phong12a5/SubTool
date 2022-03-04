@@ -133,7 +133,7 @@ void ServiceData::loadCloneInfo()
         LOGD << "NULL";
     } else {
         setCloneInfo(new CloneInfo(cloneInfo));
-        LOGD << m_cloneInfo->toString();
+        LOGD << QString("%1|%2|%3").arg(m_cloneInfo->uid(), m_cloneInfo->password(), m_cloneInfo->secretkey());;
     }
 }
 
@@ -149,11 +149,11 @@ void ServiceData::onCloneInfoChanged(QString action)
 
     QSettings settings;
     if(m_cloneInfo && m_cloneInfo->aliveStatus() == CLONE_ALIVE_STATUS_STORE) {
-        LOGD << "Save clone info: " << m_cloneInfo->toJson();
+        LOGD << "Save clone info: " << m_cloneInfo->uid();
         settings.setValue(cloneInfokey(), m_cloneInfo->toJson());
     } else {
         settings.setValue(cloneInfokey(), QJsonObject());
-        LOGD << "Save clone info: " <<  QJsonObject();
+        LOGD << "Save clone info: NULL";
         if(m_cloneInfo && m_cloneInfo->aliveStatus() == CLONE_ALIVE_STATUS_CHECKPOINT) {
             delete m_cloneInfo;
             m_cloneInfo = nullptr;

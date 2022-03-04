@@ -52,9 +52,9 @@ QString CloneInfo::cookies()
     return m_cloneInfo.value(CLONE_INFO_FIELD_COOKIES).toString();
 }
 
-void CloneInfo::setAliveStatus(QString status)
+void CloneInfo::setAliveStatus(QString status, bool forceSync)
 {
-    if(this->aliveStatus() != status) {
+    if(this->aliveStatus() != status || forceSync) {
         m_cloneInfo[CLONE_INFO_FIELD_ALIVE_STATUS] = status;
         emit cloneInfoChanged(CLONE_INFO_ACTION_UPDATE_ALIVE_STATUS);
     }
