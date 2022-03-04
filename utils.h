@@ -23,6 +23,8 @@ bool checkVersionFormat(QString verion);
 
 bool ping(QString host);
 
+void handle_eptr(std::exception_ptr eptr);
+
 void delay(int milsec);
 
 void delayRandom(int minMilSec, int maxMilSec);

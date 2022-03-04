@@ -17,6 +17,8 @@
 #include <QDir>
 #include <QJsonArray>
 #include "model/afaction.h"
+#include <exception>
+#include <stdexcept>
 
 QString getRandomUserAgent()
 {
@@ -178,7 +180,7 @@ void ChromeService::getClone()
         LOGD << cloneInfo;
         serviceData()->setCloneInfo(new CloneInfo(cloneInfo));
         if(serviceData()->cloneInfo()) {
-            serviceData()->cloneInfo()->setAliveStatus("stored");
+            serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
         }
     }
 }
@@ -267,7 +269,9 @@ void ChromeService::feedLike(bool acceptLike)
                         break;
                     }
                 }
-            } catch(...) {}
+            } catch(...) {
+                handle_eptr(std::current_exception());
+            }
         }
 
         delayRandom(500, 2000);
@@ -396,7 +400,7 @@ bool ChromeService::getFb_dtsg()
             return true;
         }
     } catch(...) {
-
+        handle_eptr(std::current_exception());
     }
 
     return false;
@@ -499,7 +503,7 @@ bool ChromeService::acceptInvitation(QJsonObject &data)
             }
             driver->Back();
         } catch(...) {
-
+            handle_eptr(std::current_exception());
         }
     } else {
         LOGD << "No invite link";
@@ -640,6 +644,6 @@ void ChromeService::onMainProcess()
             }
         }
     } catch(...) {
-
+        handle_eptr(std::current_exception());
     }
 }

@@ -66,6 +66,19 @@ bool ping(QString host) {
     return exitCode == 0;
 }
 
+void handle_eptr(std::exception_ptr eptr) // passing by value is ok
+{
+    try {
+        if (eptr) {
+            std::rethrow_exception(eptr);
+        } else {
+            LOGD << "Unknown exception";
+        }
+    } catch(const std::exception& e) {
+        LOGD << "Caught exception \"" << e.what();
+    }
+}
+
 void delay(int milsec) {
     QThread::msleep(milsec);
 }

@@ -98,11 +98,11 @@ void AppMain::onServiceUpdated()
         if(ServiceManager::instance()->countService() < AppModel::instance()->maxThread() && \
                 ServiceManager::instance()->countService() < MAX_PROFILE_NUMBER) {
             int nextProfileId = AppModel::instance()->latestProfileId();
-//            if(nextProfileId >= MAX_PROFILE_NUMBER) {
-//                nextProfileId = 1;
-//            } else {
-//                nextProfileId ++;
-//            }
+            if(nextProfileId >= MAX_PROFILE_NUMBER) {
+                nextProfileId = 1;
+            } else {
+                nextProfileId ++;
+            }
             AppModel::instance()->setLatestProfileId(nextProfileId);
             ChromeService* service = ServiceManager::instance()->createService<ChromeService>(nextProfileId);
             service->start();
