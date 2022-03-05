@@ -333,7 +333,7 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
     } else {
          QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
          LOGD << "body: " << resp->bodyStr();
-         if(!respObj.isEmpty() && !respObj.contains("error") && !respObj.value("actor_subscribe").toObject().isEmpty()) {
+         if(!respObj.isEmpty() && !respObj.contains("error")) {
              LOGD << "Follow success";
          } else {
              LOGD << "Follow failed";
