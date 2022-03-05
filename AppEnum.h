@@ -2,50 +2,42 @@
 #define APPENUM_H
 
 // do not include anything
+#include <QString>
 
-/*********************ControllerWorkerThread Enum*********************/
-enum class PROXY_TYPE: int
-{
-    NONE_PROXY = 0,
-    TINSOFT_PROXY,
-    TMPROXY,
-    XPROXY,
+class AppEnum {
+
+public:
+    enum E_SCREEN_ID: int {
+        E_SCREEN_LOGIN = 0,
+        E_SCREEN_ENTER_LOGIN_CODE,
+        E_SCREEN_SAVE_BROWSER,
+        E_SCREEN_CREATE_SHORTCUT,
+        E_SCREEN_CHECKPOINT,
+        E_SCREEN_HOME,
+
+        E_SCREEN_UNKNOWN
+    };
+
+    static QString scrIdStr(int id) {
+        switch (id) {
+        case E_SCREEN_ID::E_SCREEN_LOGIN:
+            return "E_SCREEN_LOGIN";
+        case E_SCREEN_ID::E_SCREEN_ENTER_LOGIN_CODE:
+            return "E_SCREEN_ENTER_LOGIN_CODE";
+        case E_SCREEN_ID::E_SCREEN_SAVE_BROWSER:
+            return "E_SCREEN_SAVE_BROWSER";
+        case E_SCREEN_ID::E_SCREEN_CREATE_SHORTCUT:
+            return "E_SCREEN_CREATE_SHORTCUT";
+        case E_SCREEN_ID::E_SCREEN_CHECKPOINT:
+            return "E_SCREEN_CHECKPOINT";
+        case E_SCREEN_ID::E_SCREEN_HOME:
+            return "E_SCREEN_HOME";
+        case E_SCREEN_ID::E_SCREEN_UNKNOWN:
+            return "E_SCREEN_UNKNOWN";
+        default:
+            return "UNIMPLEMENTED SCREEN";
+        }
+    }
 };
-
-enum class PROXY_KIND: int
-{
-    HTTP,
-    SOCKS,
-};
-
-
-/*********************NetworkAccessControllerSupporter Enum*********************/
-enum class NETWORK_ACCESS_GET_TYPE: int
-{
-    NOT_SUPPORT=0,
-    GET_REQUEST_DEFAULT,
-    CHECK_USER_KEY_TINSOFT,
-    CHECK_PROXY_KEY_TINSOFT,
-    GET_PROXY_FROM_USER_KEY_TINSOFT,
-    GET_PROXY_FROM_PROXY_KEY_TINSOFT,
-};
-
-
-enum class NETWORK_ACCESS_POST_TYPE: int
-{
-    NOT_SUPPORT=0,
-    POST_REQUEST_DEFAULT,
-    CHECK_USER_KEY_TM,
-    GET_PROXY_TM,
-};
-
-
-/*********************DownloadManager Enum*********************/
-enum class DOWNLOAD_TYPE: int{
-    NONE = 0,
-    FILE_VERSION,
-    FILE_RELEASE,
-};
-
 
 #endif // APPENUM_H

@@ -19,6 +19,7 @@
 #include "model/afaction.h"
 #include <exception>
 #include <stdexcept>
+#include <AppEnum.h>
 
 QString getRandomUserAgent()
 {
@@ -304,11 +305,12 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
     req.AddHeader("sec-fetch-mode", "navigate");
     req.AddHeader("sec-fetch-dest", "document");
     req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
-//    req.AddHeader("cookie", cookies.toUtf8().data());
+    req.AddHeader("cookie", cookies.toUtf8().data());
 
     req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361,431626192\"]");
     req.AddParam("doc_id", "4451435638222552");
     req.AddParam("fb_api_req_friendly_name", "CometUserFollowMutation");
+    req.AddParam("fb_api_caller_class", "RelayModern");
     req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
 
     QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"16\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
@@ -530,6 +532,29 @@ bool ChromeService::submitAcceptedInvitation(QJsonObject data)
     }
 }
 
+int ChromeService::detectScreen()
+{
+    QString url = driver->GetUrl().c_str();
+    if(ElementExist(ByXPath("//*[contains(@data-sigil, 'm_login_email')]"))) {
+        return AppEnum::E_SCREEN_LOGIN;
+    } else if( ElementExist(ById("approvals_code"))) {
+        return AppEnum::E_SCREEN_ENTER_LOGIN_CODE;
+    } else if(ElementExist(ByXPath("//*[contains(@value, 'save_device')]")) &&
+              ElementExist(ByXPath("//*[contains(@value, 'dont_save')]"))) {
+       return AppEnum::E_SCREEN_SAVE_BROWSER;
+    } else if(ElementExist(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"))) {
+        return AppEnum::E_SCREEN_CREATE_SHORTCUT;
+    } else if(url.contains("%2Fcheckpoint%2F") ||
+              url.contains("282/")) {
+        return AppEnum::E_SCREEN_CHECKPOINT;
+    } else if(ElementExist(ById("m_news_feed_stream"))||
+                ElementExist(ByXPath("//*[contains(@href, '/profile.php?refid=')]"))) {
+       return AppEnum::E_SCREEN_HOME;
+    } else {
+        return AppEnum::E_SCREEN_UNKNOWN;
+    }
+}
+
 void ChromeService::onStarted()
 {
     LOGD;
@@ -555,23 +580,61 @@ void ChromeService::onMainProcess()
                 initChromeDriver();
             } else {
                 QString url = driver->GetUrl().c_str();
-                if(ElementExist(ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) ||
-                        ElementExist(ById("approvals_code"))) {
-                    login();
-                } else if(ElementExist(ByXPath("//*[contains(@value, 'save_device')]")) &&
-                          ElementExist(ByXPath("//*[contains(@value, 'dont_save')]"))) {
+
+                int screen_id = detectScreen();
+                m_screen_stack.append(screen_id);
+                LOGD << AppEnum::scrIdStr(screen_id);
+                switch (screen_id) {
+                case AppEnum::AppEnum::E_SCREEN_LOGIN: {
+                    QString uid = serviceData()->cloneInfo()->uid();
+                    QString password = serviceData()->cloneInfo()->password();
+                    Element element;
+                    if(FindElement(element, ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) && uid != QString(element.GetAttribute("value").c_str())) {
+                         inputText(serviceData()->cloneInfo()->uid(),ByXPath("//*[contains(@data-sigil, 'm_login_email')]"));
+                         delay(random(500, 1000));
+                    }
+
+                    if(FindElement(element, ByXPath("//*[contains(@data-sigil, 'm_login_email')]")) &&
+                                   password != QString(element.GetAttribute("value").c_str())) {
+                        inputText(serviceData()->cloneInfo()->password(),ByXPath("//*[contains(@data-sigil, 'password-plain-text-toggle-input')]"));
+                        delay(random(500, 1000));
+                    }
+
+                    if(ElementExist(ByXPath("//*[contains(@data-sigil, 'touchable login_button_block m_login_button')]"))) {
+                        click(ByXPath("//*[contains(@data-sigil, 'touchable login_button_block m_login_button')]"));
+                        delay(5000);
+                    }
+                }
+                    break;
+                case AppEnum::E_SCREEN_ENTER_LOGIN_CODE:
+                    if(ElementExist(ById("approvals_code"))) {
+                        QString secretkey = serviceData()->cloneInfo()->secretkey();
+                        if(secretkey.isEmpty()) {
+                            serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
+                            driver->DeleteCookies();
+                            finish();
+                            return;
+                        } else {
+                            delay(random(1000, 2000));
+                            inputText(WebAPI::getInstance()->tOTP(secretkey.toUtf8().data()).c_str()\
+                                  ,ById("approvals_code"));
+                            delay(random(500,1000));
+                            click(ById("checkpointSubmitButton-actual-button"));
+                        }
+                    }
+                    break;
+                case AppEnum::E_SCREEN_SAVE_BROWSER:
                     click(ByName("submit[Continue]"));
-                } else if(ElementExist(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"))) {
+                    break;
+                case AppEnum::E_SCREEN_CREATE_SHORTCUT:
                     click(ByXPath("//*[contains(@href, '/a/nux/wizard/nav.php?step=homescreen_shortcut&skip')]"));
-                } else if(url.contains("%2Fcheckpoint%2F") ||
-                          url.contains("282/")) {
-                    LOGD << "CHECKPOINT";
+                    break;
+                case AppEnum::E_SCREEN_CHECKPOINT:
                     serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_CHECKPOINT);
                     driver->DeleteCookies();
                     finish();
-                } else if(ElementExist(ById("m_news_feed_stream"))||
-                            ElementExist(ByXPath("//*[contains(@href, '/profile.php?refid=')]"))) {
-                    LOGD << "NEW FEED SCREEN";
+                    break;
+                case AppEnum::E_SCREEN_HOME:
                     serviceData()->cloneInfo()->setAliveStatus(CLONE_ALIVE_STATUS_STORE);
 
 #if 0
@@ -640,6 +703,9 @@ void ChromeService::onMainProcess()
                         finish();
                     }
 #endif
+                    break;
+                default:
+                    break;
                 }
             }
         }

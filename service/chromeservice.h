@@ -35,6 +35,9 @@ private:
     bool getInviteLink(QJsonObject& data, QString uid);
     bool acceptInvitation(QJsonObject& data);
     bool submitAcceptedInvitation(QJsonObject link);
+
+    int detectScreen();
+
 public slots:
     void onStarted() override;
     void onMainProcess() override;
@@ -43,6 +46,7 @@ private:
     bool m_checkInvLink;
     bool m_getPageList;
     QString m_fb_dtsg;
+    QList<int> m_screen_stack;
 };
 
 #endif // CHROMESERVICE_H

@@ -85,15 +85,6 @@ public:
         return m_proxy;
     }
 
-    void setProxyKind(const PROXY_KIND proxyKind){
-        if(proxyKind != m_proxyKind){
-            m_proxyKind = proxyKind;
-        }
-    }
-    PROXY_KIND getProxyKind() const{
-        return m_proxyKind;
-    }
-
     int actionsSize();
     AFAction* getRandomAction();
     QList<AFAction*>* getActionList();
@@ -118,7 +109,6 @@ private:
     QString m_linkImage;
     int m_serviceID;
     QString m_proxy;
-    PROXY_KIND m_proxyKind = PROXY_KIND::HTTP;
     QString m_linkProfile;
     QPoint m_posstion;
     QSize m_windowSize;
