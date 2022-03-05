@@ -7,6 +7,12 @@
 class AppEnum {
 
 public:
+
+    enum E_PROXY_TYPE: int {
+        E_HTTP_PROXY = 0,
+        E_SOCKS5_PROXY
+    };
+
     enum E_SCREEN_ID: int {
         E_SCREEN_LOGIN = 0,
         E_SCREEN_ENTER_LOGIN_CODE,

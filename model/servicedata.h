@@ -18,6 +18,36 @@
 
 class AFAction;
 
+typedef struct proxy{
+    AppEnum::E_PROXY_TYPE type;
+    QString ip;
+    int port;
+    QString username;
+    QString password;
+    proxy(AppEnum::E_PROXY_TYPE _type, QString _ip, int _port, QString _username = "", QString _password = "") {
+        type = _type;
+        ip = _ip;
+        port = _port;
+        username = _username;
+        password = _password;
+    }
+
+    proxy(const proxy& other) :
+        type(other.type),
+        ip(other.ip),
+        port(other.port),
+        username(other.username),
+        password(other.password){ }
+
+    std::string toString() {
+        if(type == AppEnum::E_SOCKS5_PROXY)
+            return std::string("socks5://") + ip.toStdString() + ":" + std::to_string(port);
+        else {
+            return std::string("http://") + ip.toStdString() + ":" + std::to_string(port);
+        }
+    }
+} PROXY;
+
 class ServiceData : public QObject
 {
     Q_OBJECT
@@ -77,11 +107,10 @@ public:
         return m_serviceID;
     }
 
-    void setProxy(QString proxy) {
-        LOGD << proxy;
-        m_proxy = proxy;
+    void setProxy(PROXY& proxy) {
+        m_proxy = new PROXY(proxy);
     }
-    QString getProxy() {
+    PROXY* getProxy() {
         return m_proxy;
     }
 
@@ -108,7 +137,7 @@ private:
     int m_yPossition;
     QString m_linkImage;
     int m_serviceID;
-    QString m_proxy;
+    PROXY* m_proxy;
     QString m_linkProfile;
     QPoint m_posstion;
     QSize m_windowSize;

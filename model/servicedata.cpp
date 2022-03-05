@@ -20,6 +20,7 @@ ServiceData::ServiceData(BaseService::SERVICE_TYPE type, int profileId, QObject 
     m_type(type),
     m_profileId(profileId),
     m_cloneInfo(nullptr),
+    m_proxy(nullptr),
     m_actions(nullptr)
 {
     QSettings settings;
@@ -45,6 +46,11 @@ ServiceData::~ServiceData()
     if(m_cloneInfo) {
         delete m_cloneInfo;
         m_cloneInfo = nullptr;
+    }
+
+    if(m_proxy) {
+        delete m_proxy;
+        m_proxy = nullptr;
     }
 
     if(m_actions) {

@@ -72,7 +72,7 @@ void ChromeService::initChromeDriver()
     std::vector<std::string> args;
     args.push_back("--user-data-dir=" + serviceData()->profilePath().toStdString());
     args.push_back("--ignore-certificate-errors");
-    args.push_back("--proxy-server=http://" + serviceData()->getProxy().toStdString());
+    args.push_back("--proxy-server=" + serviceData()->getProxy()->toString());
     args.push_back("--disable-features=ChromeWhatsNewUI");
 #if 0
     if(serviceData()->cloneInfo()->userAgent().isEmpty()) {
@@ -164,11 +164,14 @@ void ChromeService::getProxy()
     }
 #else
     QString ip = "10.10.243.97";
-    int ports[] = {4001, 4002, 4004, 4005, 4006, 6001, 6002, 6003, 6004, 6005, 6006};
-    int port = ports[QRandomGenerator::global()->bounded(11)];
-    QString cgbProxy = ip + ":" + QString::number(port);
-    if(checkProxy(ip, port)) {
-        serviceData()->setProxy(cgbProxy);
+    int httpPorts[] = {4001, 4002, 4004, 4005, 4006, 6001, 6002, 6003, 6004, 6005, 6006};
+#if 0
+    int socks5Ports[] = {5001, 5002, 5004, 5005, 5006, 7001, 7002, 7003, 7004, 7005, 7006};
+#endif
+    int port = httpPorts[QRandomGenerator::global()->bounded(11)];
+    PROXY httpProxy(AppEnum::E_HTTP_PROXY, ip, port);
+    if(checkProxy(httpProxy)) {
+        serviceData()->setProxy(httpProxy);
     }
 #endif
 }
@@ -415,16 +418,26 @@ bool ChromeService::getFb_dtsg()
     return false;
 }
 
-bool ChromeService::checkProxy(QString ip, int port)
+bool ChromeService::checkProxy(PROXY proxy)
 {
     CkHttp http;
-    http.put_ProxyDomain(ip.toUtf8().data());
-    http.put_ProxyPort(port);
+    if(proxy.type == AppEnum::E_HTTP_PROXY) {
+        http.put_ProxyDomain(proxy.ip.toUtf8().data());
+        http.put_ProxyPort(proxy.port);
+    } else if(proxy.type == AppEnum::E_SOCKS5_PROXY) {
+        http.put_SocksVersion(5);
+        http.put_SocksHostname(proxy.ip.toUtf8().data());
+        http.put_SocksPort(proxy.port);
+        http.put_SocksUsername(proxy.username.toUtf8().data());
+        http.put_SocksPassword(proxy.password.toUtf8().data());
+    } else {
+        return false;
+    }
     const char * html = http.quickGetStr("https://www.google.com.vn/");
     if(html) {
         return html;
     } else {
-        LOGD << (ip + ":" + QString::number(port))  << "proxy died";
+        LOGD << (proxy.ip + ":" + QString::number(proxy.port))  << "proxy died";
         return false;
     }
 }
@@ -577,7 +590,7 @@ void ChromeService::onMainProcess()
 {
     LOGD;
     try {
-        if(serviceData()->getProxy().isEmpty()) {
+        if(serviceData()->getProxy() == nullptr) {
             // get proxy first
             getProxy();
         } else if(serviceData()->cloneInfo() == nullptr) {

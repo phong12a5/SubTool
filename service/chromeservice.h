@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "baseservice.h"
+#include <model/servicedata.h>
 //#include "worker/chromeworker.h"
 
 class ServiceData;
@@ -31,7 +32,7 @@ private:
     bool getFb_dtsg();
 
 
-    bool checkProxy(QString ip, int port);
+    bool checkProxy(PROXY proxy);
     bool getInviteLink(QJsonObject& data, QString uid);
     bool acceptInvitation(QJsonObject& data);
     bool submitAcceptedInvitation(QJsonObject link);
