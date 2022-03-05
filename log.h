@@ -7,7 +7,7 @@
 #include <QJsonObject>
 #include <qdatetime.h>
 
-#define LOGD qDebug() << "[" << QThread::currentThreadId() << "]: " << "[" << __FUNCTION__ << "][" << __FILE__ << "][" << __LINE__ << "] "
+#define LOGD qDebug() << "[" << QThread::currentThreadId() << "][" << __FUNCTION__ << "][" << __LINE__ << "]/"
 
 class LogHelper: public QObject
 {

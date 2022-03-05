@@ -14,7 +14,7 @@
 #define DEFAULT_KEY "Congaubeo@12345Congaubeo@5678910"
 #define DEFAULT_IV "Congaubeo@555555"
 
-#define MAX_PROFILE_NUMBER          20
+#define MAX_PROFILE_NUMBER          50
 
 #define MAX_THREAD_FIELD            "config/max_thread"
 #define TOKEN_FIELD                 "config/token"

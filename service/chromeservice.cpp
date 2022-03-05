@@ -282,9 +282,14 @@ void ChromeService::feedLike(bool acceptLike)
 void ChromeService::followByPage(QString pageId, AFAction* action)
 {
     LOGD;
+    QString uid = serviceData()->cloneInfo()->uid();
     QString targetUid = action->fb_id();
     QString fb_dtsg = m_fb_dtsg;
     QString cookies = getCookies();
+    LOGD << "uid: " << uid;
+    LOGD << "pageId: " << pageId;
+    LOGD << "targetUid: " << targetUid;
+    LOGD << "fb_dtsg: " << fb_dtsg;
     LOGD << "cookies: " << cookies;
 
 
@@ -307,13 +312,15 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
     req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
     req.AddHeader("cookie", cookies.toUtf8().data());
 
-    req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361,431626192\"]");
-    req.AddParam("doc_id", "4451435638222552");
+    req.AddParam("av", uid.toUtf8().data());
+    req.AddParam("__user", uid.toUtf8().data());
+    req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
+    req.AddParam("fb_api_caller_class", "RelayModern");
     req.AddParam("fb_api_req_friendly_name", "CometUserFollowMutation");
     req.AddParam("fb_api_caller_class", "RelayModern");
-    req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
+    req.AddParam("doc_id", "4184140341672266");
 
-    QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"16\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
+    QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"0\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
     req.AddParam("variables", variable.toUtf8().data());
 
     CkHttpResponse *resp = http.PostUrlEncoded("https://www.facebook.com/api/graphql",req);
@@ -694,7 +701,7 @@ void ChromeService::onMainProcess()
                             LOGD << "follow by page: " << serviceData()->cloneInfo()->pageList().at(i);
                             QJsonObject action;
                             action["service_code"] = "XXXX";
-                            action["fb_id"] = "100052916236602";
+                            action["fb_id"] = "100006710623291";
                             action["count"] = 100;
                             action["action"] = "PageSub";
                             followByPage(serviceData()->cloneInfo()->pageList().at(i), new AFAction(action));
