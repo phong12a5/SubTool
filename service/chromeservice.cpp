@@ -333,7 +333,7 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
     } else {
          QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
          LOGD << "body: " << resp->bodyStr();
-         if(!respObj.isEmpty() && !respObj.contains("error")) {
+         if(!respObj.isEmpty() && !respObj.contains("errors")) {
              LOGD << "Follow success";
          } else {
              LOGD << "Follow failed";
@@ -535,6 +535,7 @@ bool ChromeService::acceptInvitation(QJsonObject &data)
 
 bool ChromeService::submitAcceptedInvitation(QJsonObject data)
 {
+    LOGD;
     data["status"] = "accepted";
 
     CkHttp http;
@@ -697,7 +698,6 @@ void ChromeService::onMainProcess()
                             m_checkInvLink = getInviteLink(data, serviceData()->cloneInfo()->uid());
                             if(data.contains("invite_link")) {
                                 if(acceptInvitation(data)) {
-                                    delayRandom(2000, 4000);
                                     submitAcceptedInvitation(data);
                                 }
                                 delayRandom(2000, 4000);
@@ -719,6 +719,7 @@ void ChromeService::onMainProcess()
                             action["action"] = "PageSub";
                             followByPage(serviceData()->cloneInfo()->pageList().at(i), new AFAction(action));
                             delayRandom(4000, 7000);
+                            break;
                         }
                         finish();
                     }
@@ -726,6 +727,16 @@ void ChromeService::onMainProcess()
                     break;
                 default:
                     break;
+                }
+
+
+                // Check screen loop
+                foreach(int screen_id, m_screen_stack) {
+                    if(m_screen_stack.count(screen_id) > MAX_SCREEN_LOOP) {
+                        LOGD << "Screen loop ..... ";
+                        finish();
+                        break;
+                    }
                 }
             }
         }
