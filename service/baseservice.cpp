@@ -155,7 +155,11 @@ QString BaseService::getCookies(bool* ok)
         std::string cookiesStr;
         foreach(Cookie cookie , cookies) {
             std::string cookieStr;
-            cookieStr += cookie.name + "=" + cookie.value + ";";
+            if(cookiesStr.empty()) {
+                cookieStr += cookie.name + "=" + cookie.value;
+            } else {
+                cookieStr += ";" + cookie.name + "=" + cookie.value;
+            }
             cookiesStr += cookieStr;
         }
         if(ok) *ok = true;

@@ -27,7 +27,7 @@ private:
 
     void login();
     void feedLike(bool acceptLike);
-    void followByPage(QString pageId, AFAction* action);
+    bool followByPage(QString pageId, AFAction* action);
     bool getPagesOfUid();
     bool getFb_dtsg();
 
@@ -47,6 +47,7 @@ private:
     bool m_checkInvLink;
     bool m_getPageList;
     QString m_fb_dtsg;
+    QString m_jazoest;
     QList<int> m_screen_stack;
 };
 

@@ -20,6 +20,12 @@
 #include <exception>
 #include <stdexcept>
 #include <AppEnum.h>
+#include <QEventLoop>
+#include <QNetworkReply>
+#include <QHttpMultiPart>
+#include <QHttpPart>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
 
 QString getRandomUserAgent()
 {
@@ -282,46 +288,74 @@ void ChromeService::feedLike(bool acceptLike)
     }
 }
 
-void ChromeService::followByPage(QString pageId, AFAction* action)
+bool ChromeService::followByPage(QString pageId, AFAction* action)
 {
     LOGD;
     QString uid = serviceData()->cloneInfo()->uid();
     QString targetUid = action->fb_id();
     QString fb_dtsg = m_fb_dtsg;
+    QString jazoest = m_jazoest;
     QString cookies = getCookies();
     LOGD << "uid: " << uid;
     LOGD << "pageId: " << pageId;
     LOGD << "targetUid: " << targetUid;
     LOGD << "fb_dtsg: " << fb_dtsg;
+    LOGD << "jazoest: " << jazoest;
     LOGD << "cookies: " << cookies;
 
 
     CkHttp http;
+    http.put_ProxyDomain(serviceData()->getProxy()->ip.toUtf8().data());
+    http.put_ProxyPort(serviceData()->getProxy()->port);
+
     CkHttpRequest req;
     req.put_HttpVerb("POST");
-    req.put_Path("/api/graphql");
-    req.put_ContentType("multipart/form-data;charset=utf-8");
+    req.put_ContentType("multipart/form-data");
 
     req.AddHeader("authority", "www.facebook.com");
-    req.AddHeader("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"");
+    req.AddHeader("pragma", "no-cache");
+    req.AddHeader("cache-control", "no-cache");
+    req.AddHeader("sec-ch-ua", "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"97\", \"Chromium\";v=\"97\"");
     req.AddHeader("accept", "application/json, text/plain, */*");
     req.AddHeader("sec-ch-ua-mobile", "?0");
-    req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36");
+    req.AddHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36");
+    req.AddHeader("viewport-width", "1366");
+    req.AddHeader("x-fb-friendly-name", "CometUserFollowMutation");
+    req.AddHeader("x-fb-lsd", "G8ufYXRH0qQhgaujpf_KUC");
+    req.AddHeader("content-type", "application/x-www-form-urlencoded");
     req.AddHeader("sec-ch-ua-platform", "\"Windows\"");
+    req.AddHeader("accept", "*/*");
     req.AddHeader("origin", "https://www.facebook.com");
-    req.AddHeader("sec-fetch-site", "none");
-    req.AddHeader("sec-fetch-mode", "navigate");
-    req.AddHeader("sec-fetch-dest", "document");
+    req.AddHeader("sec-fetch-site", "same-origin");
+    req.AddHeader("sec-fetch-mode", "cors");
+    req.AddHeader("sec-fetch-dest", "empty");
+    req.AddHeader("referer", "https://www.facebook.com/zuck?_rdr");
     req.AddHeader("accept-language", "en-US,en;q=0.9,vi;q=0.8");
     req.AddHeader("cookie", cookies.toUtf8().data());
 
-    req.AddParam("av", uid.toUtf8().data());
-    req.AddParam("__user", uid.toUtf8().data());
+    req.AddParam("__a", "1");
+    req.AddParam("__dyn", "7AzHxqU5a5Q1ryaxG4VuC0BVU98nwgU76byQdwSwAyU8EW0CEboG4E762S1DwUx609vCxS320om78-221Rwwwg8a8465o-cwfG12wOKdwGwQw9m8wsU9kbxS2218wc61axe3S68f85qfK6E7e58jwGzEaE5e7oqBwJK2W5olwUwgojUlDw-wAxe1MBx_y88E6a1PwyBwJwSyES0Io88cA0z8");
+    req.AddParam("__csr", "gtgqhsBNz6MBbA99tTln99j8GSGW_kCAIOF9tLFLdLGiBK-AQGt5ALEhrF6QQmQUyqGa_H9QFmyk8-XKirihsHy6Fp99AGyoF4-EKKFpQazkq5oCt6LAz4EnuaBx26VoCmfFohJaqdHWyrCKVpF9GxqmlRxybBwJAGax16BK6K324VpUsVAcwDyo8p8DCwPzEC217xidw-x7CK6oK2yeBAG1mxO8Cwgoigjx-fyXzUtK7pUCt0EGdAgeEcUbEdodU9Ujxq4A3y1cwoEy9z9UCdwKwn98kw9G3qiEO16x20i62i4UK06e-7o0kuwpAawvU0gmgmwOwfRVo0QC3-2y01Dcwdlw1qgm9hOmywuoDAgdszykcy85-7Q1nw0xNwgkEmxG2G0hG016gP0");
+    req.AddParam("__req", "i");
+    req.AddParam("__hs", "19007.HYP:comet_pkg.2.1.0.2.");
+    req.AddParam("dpr", "1");
+    req.AddParam("__ccg", "GOOD");
+    req.AddParam("__rev", "1004944189");
+    req.AddParam("__s", "bckcyr:ez3pnn:78obm6");
+    req.AddParam("__hsi", "7053415870342166096-0");
+    req.AddParam("__comet_req", "1");
     req.AddParam("fb_dtsg", fb_dtsg.toUtf8().data());
+    req.AddParam("jazoest", jazoest.toUtf8().data());
+    req.AddParam("lsd", "G8ufYXRH0qQhgaujpf_KUC");
+    req.AddParam("__spin_r", "1004944189");
+    req.AddParam("__spin_b", "trunk");
+    req.AddParam("__spin_t", "1642251357");
     req.AddParam("fb_api_caller_class", "RelayModern");
     req.AddParam("fb_api_req_friendly_name", "CometUserFollowMutation");
-    req.AddParam("fb_api_caller_class", "RelayModern");
+    req.AddParam("variables", QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"2\"},\"scale\":1}").arg(targetUid).arg(pageId).toUtf8().data());
+    req.AddParam("server_timestamps", "true");
     req.AddParam("doc_id", "4184140341672266");
+    req.AddParam("fb_api_analytics_tags", "[\"qpl_active_flow_ids=30605361\"]");
 
     QString variable = QString("{\"input\":{\"subscribe_location\":\"PROFILE\",\"subscribee_id\":\"%1\",\"actor_id\":\"%2\",\"client_mutation_id\":\"0\"},\"scale\":1.5}").arg(targetUid).arg(pageId);
     req.AddParam("variables", variable.toUtf8().data());
@@ -329,16 +363,17 @@ void ChromeService::followByPage(QString pageId, AFAction* action)
     CkHttpResponse *resp = http.PostUrlEncoded("https://www.facebook.com/api/graphql",req);
     if (http.get_LastMethodSuccess() == false) {
         LOGD << "error: " << http.lastErrorText();
-        return;
     } else {
          QJsonObject respObj = QJsonDocument::fromJson(resp->bodyStr()).object();
-         LOGD << "body: " << resp->bodyStr();
+//         LOGD << "body: " << resp->bodyStr();
          if(!respObj.isEmpty() && !respObj.contains("errors")) {
              LOGD << "Follow success";
+             return true;
          } else {
              LOGD << "Follow failed";
          }
     }
+    return false;
 }
 
 bool ChromeService::getPagesOfUid()
@@ -395,22 +430,77 @@ bool ChromeService::getPagesOfUid()
 
 bool ChromeService::getFb_dtsg()
 {
-    LOGD;
     try {
-        std::string source = driver->Get("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi").GetSource();
-        std::string fb_dtsg;
-        std::string regx = R"(name=\\\"fb_dtsg\\\" value=\\\"([\s\S]*?)\\\")";
-        std::smatch matches;
-        if (std::regex_search(source, matches, std::regex(regx)))
-        {
-            fb_dtsg = matches[1];
-            m_fb_dtsg = fb_dtsg.c_str();
-        }
-        driver->Back();
+//        std::vector<Element> fb_dtsgs = driver->FindElements(ByName("fb_dtsg"));
+//        if(fb_dtsgs.size() > 0) {
+//            m_fb_dtsg = fb_dtsgs[0].GetAttribute("value").c_str();
+//        }
 
-        if(!fb_dtsg.empty()) {
-            return true;
+//        std::vector<Element> jazoests = driver->FindElements(ByName("jazoest"));
+//        if(jazoests.size() > 0) {
+//            m_jazoest = jazoests[0].GetAttribute("value").c_str();
+//        }
+
+//        std::string source = driver->Get("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi").GetSource();
+//        std::string fb_dtsg;
+//        std::string regx = R"(name=\\\"fb_dtsg\\\" value=\\\"([\s\S]*?)\\\")";
+//        std::smatch matches;
+//        if (std::regex_search(source, matches, std::regex(regx)))
+//        {
+//            fb_dtsg = matches[1];
+//            m_fb_dtsg = fb_dtsg.c_str();
+//        }
+//        driver->Back();
+
+//        if(!fb_dtsg.empty()) {
+//            return true;
+//        }
+
+        CkHttp http;
+        CkHttpRequest req;
+        req.put_HttpVerb("POST");
+        req.put_ContentType("multipart/form-data");
+
+        http.SetRequestHeader("authority", "mbasic.facebook.com");
+        http.SetRequestHeader("pragma", "no-cache");
+        http.SetRequestHeader("cache-control", "no-cache");
+        http.SetRequestHeader("sec-ch-ua", "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"97\", \"Chromium\";v=\"97\"");
+        http.SetRequestHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+        http.SetRequestHeader("sec-ch-ua-mobile", "?0");
+        http.SetRequestHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36");
+        http.SetRequestHeader("sec-ch-ua-platform", "\"Windows\"");
+        http.SetRequestHeader("upgrade-insecure-requests", "1");
+        http.SetRequestHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+        http.SetRequestHeader("origin", "https://www.facebook.com");
+        http.SetRequestHeader("sec-fetch-site", "none");
+        http.SetRequestHeader("sec-fetch-mode", "navigate");
+        http.SetRequestHeader("sec-fetch-user", "?1");
+        http.SetRequestHeader("sec-fetch-dest", "document");
+        http.SetRequestHeader("accept-language", "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5");
+        http.SetRequestHeader("cookie", getCookies().toUtf8().data());
+
+        const char *resp = http.quickGetStr("https://mbasic.facebook.com/messages/");
+        if (http.get_LastMethodSuccess() == false) {
+            LOGD << "error: " << http.lastErrorText();
+        } else {
+//            LOGD << resp;
+            std::string source = std::string(resp);
+            std::string fb_dtsg, jazoests;
+            std::string regx = R"(name=\"fb_dtsg\" value=\"([\s\S]*?)\")";
+            std::smatch matches;
+            if (std::regex_search(source, matches, std::regex(regx)))
+            {
+                fb_dtsg = matches[1];
+                m_fb_dtsg = fb_dtsg.c_str();
+            }
+
+            if (std::regex_search(source, matches, std::regex(R"(name=\"jazoest\" value=\"([\s\S]*?)\")")))
+            {
+                jazoests = matches[1];
+                m_jazoest = jazoests.c_str();
+            }
         }
+
     } catch(...) {
         handle_eptr(std::current_exception());
     }
@@ -532,6 +622,8 @@ bool ChromeService::acceptInvitation(QJsonObject &data)
     }
     return false;
 }
+
+
 
 bool ChromeService::submitAcceptedInvitation(QJsonObject data)
 {
@@ -717,9 +809,11 @@ void ChromeService::onMainProcess()
                             action["fb_id"] = "100006710623291";
                             action["count"] = 100;
                             action["action"] = "PageSub";
-                            followByPage(serviceData()->cloneInfo()->pageList().at(i), new AFAction(action));
+                            if(!followByPage(serviceData()->cloneInfo()->pageList().at(i), new AFAction(action))) {
+                                break;
+                            } else {
                             delayRandom(4000, 7000);
-                            break;
+                            }
                         }
                         finish();
                     }
